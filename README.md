@@ -10,7 +10,7 @@
 
 ## Documentation to be updated soon
 
-WIP: Documentation
-WIP: Api more api endpints
-WIP: Updated CLI
-WPI: Business Logic for demonstration
+- WIP: Documentation
+- WIP: Api more api endpints
+- WIP: Updated CLI
+- WPI: Business Logic for demonstration
