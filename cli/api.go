@@ -11,10 +11,23 @@ import (
 )
 
 func login(passkeyId string, serverUrl string) {
-	passkeyID := getPasskeyId(passkeyId)
 	url := getServerURL(serverUrl)
-	resp, err := http.Get(url + "/api/login/request-challenge/" + passkeyID)
+
+	publicKey, err := crypto.LoadPublicKeyFromFile(PUBLIC_KEY_PATH)
 	e(err)
+	publicKeyStr, err := crypto.PublicKeyToString(publicKey)
+	e(err)
+
+	client := http.Client{}
+	req, err := http.NewRequest("GET", url+"/api/login/request-challenge", nil)
+	req.Header.Add("Public-Key", publicKeyStr)
+	e(err)
+	resp, err := client.Do(req)
+	e(err)
+
+	// passkeyID := getPasskeyId(passkeyId)
+	// resp, err := http.Get(url + "/api/login/request-challenge"+passkeyID)
+	// e(err)
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		// if the status code is not 200, we should log the status code and the
@@ -33,24 +46,23 @@ func login(passkeyId string, serverUrl string) {
 	challengeID, _ := data["data"].(map[string]interface{})["ChallengeID"].(string)
 	challengeStr, _ := data["data"].(map[string]interface{})["ChallengeString"].(string)
 
-	log.Println(challengeID)
-	log.Println(challengeStr)
-	verifyChallenge(url, passkeyID, challengeID, challengeStr)
+	verifyChallenge(url, "passkeyID - not to be used", challengeID, challengeStr)
 }
 
 func userReg(name string, email string, serverUrl string) {
 	url := getServerURL(serverUrl)
 
-	privateKey, err := crypto.LoadPrivateKeyFromFile(PRIVATE_KEY_PATH)
-	e(err, "Error in reading Private Key file, pelase generate new files by cli gen")
+	// privateKey, err := crypto.LoadPrivateKeyFromFile(PRIVATE_KEY_PATH)
+	// e(err, "Error in reading Private Key file, pelase generate new files by cli gen")
 	publicKey, err := crypto.LoadPublicKeyFromFile(PUBLIC_KEY_PATH)
 	e(err, "Error in reading Public Key file, pelase generate new files by cli gen")
-	privateKeyStr, err := crypto.PrivateKeyToString(privateKey) // Convert private key to string
-	e(err)
+	// privateKeyStr, err := crypto.PrivateKeyToString(privateKey) // Convert private key to string
+	// e(err)
 	publicKeyStr, err := crypto.PublicKeyToString(publicKey) // Convert public key to string
 	e(err)
 
-	jsonValue, err := json.Marshal(map[string]string{"Name": name, "Email": email, "PublicKey": publicKeyStr, "PrivateKey": privateKeyStr})
+	// jsonValue, err := json.Marshal(map[string]string{"Name": name, "Email": email, "PublicKey": publicKeyStr, "PrivateKey": privateKeyStr})
+	jsonValue, err := json.Marshal(map[string]string{"Name": name, "Email": email, "PublicKey": publicKeyStr})
 	e(err)
 	resp, err := http.Post(url+"/api/registration/user", "application/json", bytes.NewBuffer(jsonValue))
 	e(err)

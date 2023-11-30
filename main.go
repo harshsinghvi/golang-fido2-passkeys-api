@@ -26,11 +26,10 @@ func main() {
 	api := r.Group("/api")
 	{
 		api.POST("/registration/user", controllers.NewUser)
-		api.GET("/login/request-challenge/:passkey", controllers.RequestChallenge)
 		api.POST("/login/verify-challenge", controllers.VerifyChallenge)
-
-		// login using email and passkey key id
-		// auth routes - register new key , check token, business logic
+		api.GET("/login/request-challenge/:passkey", controllers.RequestChallenge)
+		api.GET("/login/request-challenge", controllers.RequestChallengeUsingPublicKey)
+		// TODO: auth routes - register new key , check token, business logic
 	}
 
 	r.Run(fmt.Sprintf(":%s", PORT))

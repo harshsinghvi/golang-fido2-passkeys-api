@@ -3,7 +3,6 @@ package controllers
 import (
 	"harshsinghvi/golang-fido2-passkeys-api/database"
 	"harshsinghvi/golang-fido2-passkeys-api/handlers"
-	"harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
 	"harshsinghvi/golang-fido2-passkeys-api/models"
 	"harshsinghvi/golang-fido2-passkeys-api/utils"
 	"log"
@@ -26,11 +25,12 @@ func GetControler(model interface{}) gin.HandlerFunc {
 func NewUser(c *gin.Context) {
 	var user models.User
 	var passkey models.Passkey
-	var passkeyPrivateKey models.PasskeyPrivateKey
+	// var passkeyPrivateKey models.PasskeyPrivateKey
 
 	data := map[string]interface{}{}
 
-	body := handlers.ParseBody(c, []string{"Email", "Name", "PrivateKey", "PublicKey"})
+	// body := handlers.ParseBody(c, []string{"Email", "Name", "PrivateKey", "PublicKey"})
+	body := handlers.ParseBody(c, []string{"Email", "Name", "PublicKey"})
 	if body == nil {
 		handlers.InternalServerError(c)
 		return
@@ -41,10 +41,10 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
-	if ok := crypto.ValidatePublicAndPrivateKeys(body["PrivateKey"].(string), body["PublicKey"].(string)); !ok {
-		handlers.BadRequest(c, "Invalid Public / Private Keys")
-		return
-	}
+	// if ok := crypto.ValidatePublicAndPrivateKeys(body["PrivateKey"].(string), body["PublicKey"].(string)); !ok {
+	// 	handlers.BadRequest(c, "Invalid Public / Private Keys")
+	// 	return
+	// }
 
 	if ok := handlers.CreateInDatabase(c, &user); !ok {
 		return
@@ -58,13 +58,13 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
-	passkeyPrivateKey.UserID = user.ID
-	passkeyPrivateKey.PasskeyID = passkey.ID
-	passkeyPrivateKey.PrivateKey, _ = body["PrivateKey"].(string)
+	// passkeyPrivateKey.UserID = user.ID
+	// passkeyPrivateKey.PasskeyID = passkey.ID
+	// passkeyPrivateKey.PrivateKey, _ = body["PrivateKey"].(string)
 
-	if ok := handlers.CreateInDatabase(c, &passkeyPrivateKey); !ok {
-		return
-	}
+	// if ok := handlers.CreateInDatabase(c, &passkeyPrivateKey); !ok {
+	// 	return
+	// }
 
 	if ok := handlers.CreateChallenge(c, data, passkey); !ok {
 		handlers.InternalServerError(c)
@@ -148,6 +148,30 @@ func RequestChallenge(c *gin.Context) {
 	var passkey models.Passkey
 
 	if res := database.DB.Where("id = ?", passkeyId).Find(&passkey); res.RowsAffected == 0 {
+		handlers.BadRequest(c, "Invalid passkey")
+		return
+	}
+
+	if ok := handlers.CreateChallenge(c, data, passkey); !ok {
+		handlers.InternalServerError(c)
+		return
+	}
+
+	handlers.StatusOK(c, data, "Challenge Created, Verify to login")
+}
+
+func RequestChallengeUsingPublicKey(c *gin.Context) {
+	publicKey := c.GetHeader("Public-Key")
+
+	if publicKey == "" {
+		handlers.BadRequest(c, "Public-Key Header not found")
+		return
+	}
+
+	data := map[string]interface{}{}
+	var passkey models.Passkey
+
+	if res := database.DB.Where("public_key = ?", publicKey).Find(&passkey); res.RowsAffected == 0 {
 		handlers.BadRequest(c, "Invalid passkey")
 		return
 	}
