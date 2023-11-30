@@ -14,3 +14,8 @@
 - WIP: Api more api endpints
 - WIP: Updated CLI
 - WPI: Business Logic for demonstration
+
+## Usecases
+
+- CLI Apps suthentication like ssh
+- Mobile based passkeys (Passwordless authentication)

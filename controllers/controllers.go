@@ -136,10 +136,8 @@ func VerifyChallenge(c *gin.Context) {
 	challenge.Status = "SUCCESS"
 	database.DB.Save(&challenge)
 
-	data["token"] = accessToken.Token
 	data["TokenExpiry"] = accessToken.Expiry
 	data["Token"] = accessToken.Token
-	data["Challenge"] = challenge
 	handlers.StatusOK(c, data, "Challenge Verification Successful")
 }
 
