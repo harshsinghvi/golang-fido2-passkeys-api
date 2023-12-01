@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgerrcode"
 	"github.com/mitchellh/mapstructure"
 	"harshsinghvi/golang-fido2-passkeys-api/database"
 	"harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
@@ -83,9 +84,15 @@ func ParseBodyAndBind(c *gin.Context, keys []string, data interface{}) bool {
 
 func CreateInDatabase(c *gin.Context, value interface{}) bool {
 	if res := database.DB.Create(value); res.RowsAffected == 0 || res.Error != nil {
-		log.Printf("Error While Creating in database: %s", res.Error.Error())
-		InternalServerError(c)
-		return false
+		switch code, _ := utils.PgErrorCodeAndMessage(res.Error); code {
+		case pgerrcode.UniqueViolation:
+			BadRequest(c, "Duplicate Fields")
+			return false
+		default:
+			log.Printf("Error While Creating in database: %s", res.Error.Error())
+			InternalServerError(c)
+			return false
+		}
 	}
 	return true
 }

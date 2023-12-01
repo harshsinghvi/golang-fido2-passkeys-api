@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/joho/godotenv"
 	"harshsinghvi/golang-fido2-passkeys-api/database"
-	"harshsinghvi/golang-fido2-passkeys-api/models"
-	"harshsinghvi/golang-fido2-passkeys-api/utils"
 	"log"
+	// "harshsinghvi/golang-fido2-passkeys-api/models"
+	// "harshsinghvi/golang-fido2-passkeys-api/utils"
 )
 
 func init() {
@@ -17,13 +17,13 @@ func init() {
 }
 
 func main() {
-	accessToken := models.AccessToken{
-		ID: utils.StrToUUID("e5cc62a7-5b7b-4f73-b772-8f2b8be5b999"),
-	}
+	// accessToken := models.AccessToken{
+	// 	ID: utils.StrToUUID("e5cc62a7-5b7b-4f73-b772-8f2b8be5b999"),
+	// }
 
-	res := database.DB.Delete(&accessToken)
+	// res := database.DB.Delete(&accessToken)
 
-	log.Print(accessToken)
-	log.Print(res)
-	log.Print(res.RowsAffected)
+	// log.Print(accessToken)
+	// log.Print(res)
+	// log.Print(res.RowsAffected)
 }

@@ -7,19 +7,19 @@ import (
 	"harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"harshsinghvi/golang-fido2-passkeys-api/models"
 	"harshsinghvi/golang-fido2-passkeys-api/utils"
-	"log"
+	// "log"
 	"time"
 )
 
-func GetControler(model interface{}) gin.HandlerFunc {
-	// entityName := reflect.TypeOf(&model{})
-	// search field =
-	log.Println()
-	return func(c *gin.Context) {
-		var users models.Users
-		database.DB.Find(&users)
-	}
-}
+// func GetControler(model interface{}) gin.HandlerFunc {
+// 	// entityName := reflect.TypeOf(&model{})
+// 	// search field =
+// 	log.Println()
+// 	return func(c *gin.Context) {
+// 		var users models.Users
+// 		database.DB.Find(&users)
+// 	}
+// }
 
 func NewUser(c *gin.Context) {
 	var user models.User
