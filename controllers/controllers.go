@@ -1,15 +1,14 @@
 package controllers
 
 import (
+	"github.com/gin-gonic/gin"
+	"github.com/mitchellh/mapstructure"
 	"harshsinghvi/golang-fido2-passkeys-api/database"
 	"harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"harshsinghvi/golang-fido2-passkeys-api/models"
 	"harshsinghvi/golang-fido2-passkeys-api/utils"
 	"log"
 	"time"
-
-	"github.com/gin-gonic/gin"
-	"github.com/mitchellh/mapstructure"
 )
 
 func GetControler(model interface{}) gin.HandlerFunc {

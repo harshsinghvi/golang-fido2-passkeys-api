@@ -40,6 +40,14 @@ func StatusOK(c *gin.Context, data interface{}, message string) {
 	c.Abort()
 }
 
+func UnauthorisedRequest(c *gin.Context) {
+	c.JSON(http.StatusUnauthorized, gin.H{
+		"status":  http.StatusUnauthorized,
+		"message": "Unauthorised request token invalid/expired/disabled.",
+	})
+	c.Abort()
+}
+
 func ParseBody(c *gin.Context, keys []string) map[string]interface{} {
 	body := map[string]interface{}{}
 	if err := c.Bind(&body); err != nil {

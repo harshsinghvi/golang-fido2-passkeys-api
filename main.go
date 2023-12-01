@@ -30,6 +30,11 @@ func main() {
 		api.GET("/login/request-challenge/:passkey", controllers.RequestChallenge)
 		api.GET("/login/request-challenge", controllers.RequestChallengeUsingPublicKey)
 		// TODO: auth routes - register new key , check token, business logic
+
+		protectedRoutes := api.Group("/protected", controllers.AuthMidlweare())
+		{
+			protectedRoutes.GET("/get-me", controllers.GetMe)
+		}
 	}
 
 	r.Run(fmt.Sprintf(":%s", PORT))
