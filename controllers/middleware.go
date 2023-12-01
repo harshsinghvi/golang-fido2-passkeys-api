@@ -6,7 +6,6 @@ import (
 	"harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"harshsinghvi/golang-fido2-passkeys-api/models"
 	"log"
-	"time"
 )
 
 func AuthMidlweare() gin.HandlerFunc {
@@ -19,15 +18,12 @@ func AuthMidlweare() gin.HandlerFunc {
 			return
 		}
 
-		if res := database.DB.Where("token = ?", token).Find(&accessToken); res.RowsAffected == 0 && res.Error != nil {
+	res := database.DB.Where("token = ? AND disabled = false AND expiry > now()", token).Find(&accessToken)
+
+		if res.RowsAffected == 0 || res.Error != nil {
 			if res.Error != nil {
 				log.Println("Error in querring auth token, Reason :", res.Error.Error())
 			}
-			handlers.UnauthorisedRequest(c)
-			return
-		}
-
-		if time.Until(accessToken.Expiry).Seconds() <= 0 {
 			handlers.UnauthorisedRequest(c)
 			return
 		}

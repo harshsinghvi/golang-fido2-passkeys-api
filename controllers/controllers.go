@@ -86,8 +86,8 @@ func VerifyChallenge(c *gin.Context) {
 	var challenge models.Challenge
 	var passkey models.Passkey
 
-	if res := database.DB.Where("id = ?", body["ChallengeID"].(string)).Find(&challenge); res.RowsAffected == 0 {
-		handlers.BadRequest(c, "Invalid ChallengeID")
+	if res := database.DB.Where("id = ?  AND expiry > now()", body["ChallengeID"].(string)).Find(&challenge); res.RowsAffected == 0 {
+		handlers.BadRequest(c, "Invalid/Expired ChallengeID")
 		return
 	}
 
