@@ -2,8 +2,8 @@
 
 > Passwordless FIDO Passkey API in golang, Passwordless future
 
-[https://documenter.getpostman.com/view/12907432/2s9YeHYpym](Postman Collection)
-[https://chat.openai.com/share/a5a947f0-9f3f-4045-aec8-967b8824c513](ChatGPT Prompts)
+- <https://chat.openai.com/share/a5a947f0-9f3f-4045-aec8-967b8824c513> - ChatGPT Prompts
+- <https://documenter.getpostman.com/view/12907432/2s9YeHYpym> - Postman Collection
 
 - API
 - Client CLI
