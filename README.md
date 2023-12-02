@@ -28,12 +28,12 @@ go run . gen # generate RSA keys
 go run . decrypt -c challenge-string # manually decrypt challenge string and solve manually too
 go run . sign -m challenge-solution # sign the challenge solution
 go run . register -n "User fullname" -e "user email" --server-url http://localhost:8080 # register user with previously generated rsa keys and verify challenge
-go run . login --server-url http://localhost:8080 # login user using passkeyid
+go run . login --server-url http://localhost:8080 # login user using stored keys
 ```
 
 this creates `$HOME/.FIDO2` Folder with rsa keys and config.yml file
 you can import or export keys in this folder
 
-passkey.pem - private key
-passkey.pub - public key
-config.yml -  config file (not to be edited)
+- passkey.pem - private key
+- passkey.pub - public key
+- config.yml -  config file (not to be edited)
