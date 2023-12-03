@@ -140,3 +140,9 @@ func CreateChallenge(c *gin.Context, data map[string]interface{}, passkey models
 func HealthHandler(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "OK"})
 }
+
+func ExternalRedirect(url string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, url)
+	}
+}

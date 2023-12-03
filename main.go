@@ -42,6 +42,7 @@ func main() {
 	router.GET("/health", handlers.HealthHandler)
 	// TODO: Pending
 	// router.GET("/readiness", handlers.HealthHandler)
-	
+	router.GET("/", handlers.ExternalRedirect(REPO_URL))
+
 	router.Run(fmt.Sprintf(":%s", PORT))
 }

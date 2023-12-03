@@ -20,11 +20,6 @@
 # Go workspace file
 go.work
 
-## CUSTOM
-__debug_*
-.env
-build/
-
 # Created by https://www.toptal.com/developers/gitignore/api/go,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=go,macos
 
@@ -116,3 +111,9 @@ $RECYCLE.BIN/
 
 # End of https://www.toptal.com/developers/gitignore/api/windows
 .env.prod
+
+## CUSTOM
+__debug_*
+.env
+build/
+tmp/
