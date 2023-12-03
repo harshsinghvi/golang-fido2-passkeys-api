@@ -37,3 +37,9 @@ you can import or export keys in this folder
 - passkey.pem - private key
 - passkey.pub - public key
 - config.yml -  config file (not to be edited)
+
+## Build Multi Arch Binary for CLI and Server
+
+- `./go-executable-build.bash github.com/harshsinghvi/golang-fido2-passkeys-api`
+- reference script: <https://www.digitalocean.com/community/tutorials/how-to-build-go-executables-for-multiple-platforms-on-ubuntu-16-04>
+- go supported arch and os <https://gist.github.com/asukakenji/f15ba7e588ac42795f421b48b8aede63>
