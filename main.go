@@ -21,6 +21,8 @@ func init() {
 }
 
 func main() {
+	// INFO: CONFIGS
+	REPO_URL := utils.GetEnv("REPO_URL", "https://github.com/harshsinghvi/golang-fido2-passkeys-api")
 	PORT := utils.GetEnv("PORT", "8080")
 
 	router := gin.Default()
@@ -31,7 +33,6 @@ func main() {
 		api.GET("/login/request-challenge/:passkey", controllers.RequestChallenge)
 		api.GET("/login/request-challenge", controllers.RequestChallengeUsingPublicKey)
 		// TODO: auth routes - register new key , check token, business logic
-		// TODO Add healthcheck
 
 		protectedRoutes := api.Group("/protected", controllers.AuthMidlweare())
 		{
