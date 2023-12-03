@@ -23,7 +23,8 @@ func e(err error, msg ...string) {
 }
 
 func printError() {
-	log.Fatalf("Invalid Usage")
+	// TODO Update usage help
+	log.Fatalf("Invalid Usage check https://github.com/harshsinghvi/golang-fido2-passkeys-api for cli commands")
 }
 
 func getPrivateKeyFromEnv() string {
@@ -59,13 +60,14 @@ func getServerURL(url string) string {
 	return config.ServerUrl
 }
 
-func getPasskeyId(passkeyId string) string {
-	if passkeyId != "" {
-		return passkeyId
-	}
-	config := readConfigFromFile(CONFIG_PATH)
-	if config.PasskeyID == "" {
-		log.Fatal("Server URL Not Found please specify --server-url. using " + LOCAL_HOST_URL)
-	}
-	return config.PasskeyID
-}
+// INFO: Uncomment when needed
+// func getPasskeyId(passkeyId string) string {
+// 	if passkeyId != "" {
+// 		return passkeyId
+// 	}
+// 	config := readConfigFromFile(CONFIG_PATH)
+// 	if config.PasskeyID == "" {
+// 		log.Fatal("Server URL Not Found please specify --server-url. using " + LOCAL_HOST_URL)
+// 	}
+// 	return config.PasskeyID
+// }
