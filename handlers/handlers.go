@@ -3,11 +3,6 @@ package handlers
 import (
 	"encoding/base64"
 	"fmt"
-	"log"
-	"net/http"
-	"strings"
-	"time"
-
 	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
@@ -15,6 +10,10 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/jackc/pgerrcode"
 	"github.com/mitchellh/mapstructure"
+	"log"
+	"net/http"
+	"strings"
+	"time"
 )
 
 func BadRequest(c *gin.Context, message string) {
@@ -136,4 +135,8 @@ func CreateChallenge(c *gin.Context, data map[string]interface{}, passkey models
 	data["ChallengeExpiry"] = challenge.Expiry
 
 	return true
+}
+
+func HealthHandler(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "OK"})
 }

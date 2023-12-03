@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/controllers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/joho/godotenv"
 	"log"
@@ -22,14 +23,15 @@ func init() {
 func main() {
 	PORT := utils.GetEnv("PORT", "8080")
 
-	r := gin.Default()
-	api := r.Group("/api")
+	router := gin.Default()
+	api := router.Group("/api")
 	{
 		api.POST("/registration/user", controllers.NewUser)
 		api.POST("/login/verify-challenge", controllers.VerifyChallenge)
 		api.GET("/login/request-challenge/:passkey", controllers.RequestChallenge)
 		api.GET("/login/request-challenge", controllers.RequestChallengeUsingPublicKey)
 		// TODO: auth routes - register new key , check token, business logic
+		// TODO Add healthcheck
 
 		protectedRoutes := api.Group("/protected", controllers.AuthMidlweare())
 		{
@@ -37,5 +39,9 @@ func main() {
 		}
 	}
 
-	r.Run(fmt.Sprintf(":%s", PORT))
+	router.GET("/health", handlers.HealthHandler)
+	// TODO: Pending
+	// router.GET("/readiness", handlers.HealthHandler)
+	
+	router.Run(fmt.Sprintf(":%s", PORT))
 }

@@ -30,15 +30,13 @@ func ConnectDb() {
 
 	DB.AutoMigrate(&models.User{})
 	DB.AutoMigrate(&models.Passkey{})
-	DB.AutoMigrate(&models.PasskeyPrivateKey{})
 	DB.AutoMigrate(&models.Challenge{})
 	DB.AutoMigrate(&models.AccessToken{})
+	// DB.AutoMigrate(&models.PasskeyPrivateKey{})
 
 	tx := DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
 	if tx.Error != nil {
 		log.Printf("Error in installing PG Extension %s", tx.Error)
 	}
-
-	// DB.Create(&models.User{Name: "HS3", Email: "harsh@texam.io"})
-	// DB.Delete(&models.User{ID: utils.StrToUUID("7acbfc5f-f6aa-48b9-849c-4e3867c08f90")})
+	log.Printf("Databse connected and initialised")
 }

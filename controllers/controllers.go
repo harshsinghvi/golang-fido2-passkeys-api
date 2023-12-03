@@ -7,8 +7,6 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/mitchellh/mapstructure"
-
-	// "log"
 	"time"
 )
 
