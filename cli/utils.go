@@ -3,13 +3,10 @@ package main
 import (
 	"crypto/rsa"
 	"fmt"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
 	"log"
 	"os"
-
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
 )
-
-const LOCAL_HOST_URL = "http://localhost:8080"
 
 func e(err error, msg ...string) {
 	if err != nil {
@@ -54,8 +51,8 @@ func getServerURL(url string) string {
 	}
 	config := readConfigFromFile(CONFIG_PATH)
 	if config.ServerUrl == "" {
-		log.Println("Server URL Not Found please specify --server-url. using " + LOCAL_HOST_URL)
-		return LOCAL_HOST_URL
+		log.Println("Server URL Not Found please specify --server-url. using " + DEFAULT_URL)
+		return DEFAULT_URL
 	}
 	return config.ServerUrl
 }
@@ -67,7 +64,7 @@ func getServerURL(url string) string {
 // 	}
 // 	config := readConfigFromFile(CONFIG_PATH)
 // 	if config.PasskeyID == "" {
-// 		log.Fatal("Server URL Not Found please specify --server-url. using " + LOCAL_HOST_URL)
+// 		log.Fatal("Server URL Not Found please specify --server-url. using " + DEFAULT_URL)
 // 	}
 // 	return config.PasskeyID
 // }

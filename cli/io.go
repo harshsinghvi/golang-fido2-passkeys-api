@@ -2,27 +2,9 @@ package main
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"log"
 	"os"
-	"path/filepath"
-
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
-	"gopkg.in/yaml.v2"
-)
-
-var (
-	HOME_DIR             = utils.GetEnv("HOME", "/")
-	BASE_DIR_NAME        = ".FIDO2"
-	PRIVATE_KEY_FILENAME = "passkey.pem"
-	PUBLIC_KEY_FILENAME  = "passkey.pub"
-	PASSKEY_FILENAME     = "passkey"
-	CONFIG_FILENAME      = "config.yml"
-
-	BASE_PATH        = filepath.Join(HOME_DIR, BASE_DIR_NAME)
-	PRIVATE_KEY_PATH = filepath.Join(BASE_PATH, PRIVATE_KEY_FILENAME)
-	PUBLIC_KEY_PATH  = filepath.Join(BASE_PATH, PUBLIC_KEY_FILENAME)
-	PASSKEY_PATH     = filepath.Join(BASE_PATH, PASSKEY_FILENAME)
-	CONFIG_PATH      = filepath.Join(BASE_PATH, CONFIG_FILENAME)
 )
 
 // Function to check if a file exists
