@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/joho/godotenv"
-	"harshsinghvi/golang-fido2-passkeys-api/database"
 	"log"
-	// "harshsinghvi/golang-fido2-passkeys-api/models"
-	// "harshsinghvi/golang-fido2-passkeys-api/utils"
+
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
+	"github.com/joho/godotenv"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 )
 
 func init() {

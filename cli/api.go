@@ -3,11 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
-	"harshsinghvi/golang-fido2-passkeys-api/utils"
 	"io"
 	"log"
 	"net/http"
+
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 )
 
 func login(passkeyId string, serverUrl string) {

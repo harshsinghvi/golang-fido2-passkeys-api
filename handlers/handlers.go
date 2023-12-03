@@ -3,17 +3,18 @@ package handlers
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgerrcode"
-	"github.com/mitchellh/mapstructure"
-	"harshsinghvi/golang-fido2-passkeys-api/database"
-	"harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
-	"harshsinghvi/golang-fido2-passkeys-api/models"
-	"harshsinghvi/golang-fido2-passkeys-api/utils"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"github.com/jackc/pgerrcode"
+	"github.com/mitchellh/mapstructure"
 )
 
 func BadRequest(c *gin.Context, message string) {

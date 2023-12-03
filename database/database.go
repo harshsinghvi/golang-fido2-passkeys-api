@@ -2,11 +2,12 @@ package database
 
 import (
 	"fmt"
+	"log"
+
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"harshsinghvi/golang-fido2-passkeys-api/models"
-	"harshsinghvi/golang-fido2-passkeys-api/utils"
-	"log"
 )
 
 var DB *gorm.DB

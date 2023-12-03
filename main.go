@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/controllers"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/joho/godotenv"
-	"harshsinghvi/golang-fido2-passkeys-api/controllers"
-	"harshsinghvi/golang-fido2-passkeys-api/database"
-	"harshsinghvi/golang-fido2-passkeys-api/utils"
 	"log"
 )
 

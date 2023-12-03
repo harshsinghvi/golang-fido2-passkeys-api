@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/gin-gonic/gin"
-	"harshsinghvi/golang-fido2-passkeys-api/handlers"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 )
 
 func GetMe(c *gin.Context) {

@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
-	"harshsinghvi/golang-fido2-passkeys-api/utils"
 	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"gopkg.in/yaml.v2"
 )
 
 var (
@@ -41,9 +42,9 @@ func ensureDirectoryExists(dirPath string) {
 
 // Config represents the structure of your configuration
 type Config struct {
-	ServerUrl string `yaml:"ServerUrl"`
+	ServerUrl   string `yaml:"ServerUrl"`
 	AccessToken string `yaml:"AccessToken"`
-	PasskeyID string `yaml:"PasskeyID"`
+	PasskeyID   string `yaml:"PasskeyID"`
 }
 
 // Function to read configurations from a YAML file

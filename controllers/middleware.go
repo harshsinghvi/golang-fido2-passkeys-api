@@ -1,11 +1,12 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"harshsinghvi/golang-fido2-passkeys-api/database"
-	"harshsinghvi/golang-fido2-passkeys-api/handlers"
-	"harshsinghvi/golang-fido2-passkeys-api/models"
 	"log"
+
+	"github.com/gin-gonic/gin"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 )
 
 func AuthMidlweare() gin.HandlerFunc {
@@ -18,7 +19,7 @@ func AuthMidlweare() gin.HandlerFunc {
 			return
 		}
 
-	res := database.DB.Where("token = ? AND disabled = false AND expiry > now()", token).Find(&accessToken)
+		res := database.DB.Where("token = ? AND disabled = false AND expiry > now()", token).Find(&accessToken)
 
 		if res.RowsAffected == 0 || res.Error != nil {
 			if res.Error != nil {

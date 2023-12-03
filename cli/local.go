@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/base64"
-	"harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
 	"log"
+
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
 )
 
 func gen() (string, string) {

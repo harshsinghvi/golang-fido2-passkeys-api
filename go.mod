@@ -1,4 +1,4 @@
-module harshsinghvi/golang-fido2-passkeys-api
+module github.com/harshsinghvi/golang-fido2-passkeys-api
 
 go 1.21.1
 

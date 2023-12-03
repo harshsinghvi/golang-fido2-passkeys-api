@@ -3,12 +3,13 @@ package utils
 import (
 	"encoding/base64"
 	"fmt"
-	"harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
-	"harshsinghvi/golang-fido2-passkeys-api/models"
 	"log"
 	"math/rand"
 	"strconv"
 	"strings"
+
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 )
 
 func SolveChallenge(challenge models.Challenge) (string, bool) {

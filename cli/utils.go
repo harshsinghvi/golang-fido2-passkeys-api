@@ -3,9 +3,10 @@ package main
 import (
 	"crypto/rsa"
 	"fmt"
-	"harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
 	"log"
 	"os"
+
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
 )
 
 const LOCAL_HOST_URL = "http://localhost:8080"
