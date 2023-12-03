@@ -55,7 +55,7 @@ func getServerURL(url string) string {
 			return config.ServerUrl
 		}
 	}
-	return DEFAULT_URL
+	return DEFAULT_HOST
 }
 
 // INFO: Uncomment when needed
@@ -65,7 +65,7 @@ func getServerURL(url string) string {
 // 	}
 // 	config := readConfigFromFile(CONFIG_PATH)
 // 	if config.PasskeyID == "" {
-// 		log.Fatal("Server URL Not Found please specify --server-url. using " + DEFAULT_URL)
+// 		log.Fatal("Server URL Not Found please specify --server-url. using " + DEFAULT_HOST)
 // 	}
 // 	return config.PasskeyID
 // }
