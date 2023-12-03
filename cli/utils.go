@@ -49,12 +49,13 @@ func getServerURL(url string) string {
 	if url != "" {
 		return url
 	}
-	config := readConfigFromFile(CONFIG_PATH)
-	if config.ServerUrl == "" {
-		log.Println("Server URL Not Found please specify --server-url. using " + DEFAULT_URL)
-		return DEFAULT_URL
+	if fileExists(CONFIG_PATH) {
+		config := readConfigFromFile(CONFIG_PATH)
+		if config.ServerUrl != "" {
+			return config.ServerUrl
+		}
 	}
-	return config.ServerUrl
+	return DEFAULT_URL
 }
 
 // INFO: Uncomment when needed

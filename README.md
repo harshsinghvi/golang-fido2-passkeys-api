@@ -43,3 +43,9 @@ you can import or export keys in this folder
 - `./go-executable-build.bash github.com/harshsinghvi/golang-fido2-passkeys-api`
 - reference script: <https://www.digitalocean.com/community/tutorials/how-to-build-go-executables-for-multiple-platforms-on-ubuntu-16-04>
 - go supported arch and os <https://gist.github.com/asukakenji/f15ba7e588ac42795f421b48b8aede63>
+
+## TODO
+
+- Workflow for releasing binaries
+- demo business logic (todo app)
+- demo business logic cli
