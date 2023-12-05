@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// TODO: Update Latter
 // func GetControler(model interface{}) gin.HandlerFunc {
 // 	// entityName := reflect.TypeOf(&model{})
 // 	// search field =
@@ -84,6 +85,7 @@ func NewUser(c *gin.Context) {
 	// TODO: User Verification Here
 	// TODO: Passkey Verification or authorization logic here
 
+	// TODO: Avoid sending keys at front end
 	data["PasskeyID"] = passkey.ID
 	data["User"] = user
 	handlers.StatusOK(c, data, "User Created, please complete Registration by completing challenge")
