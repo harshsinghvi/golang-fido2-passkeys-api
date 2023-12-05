@@ -116,3 +116,12 @@ func ExternalRedirect(url string) gin.HandlerFunc {
 		c.Redirect(http.StatusMovedPermanently, url)
 	}
 }
+
+func MarkVerified(c *gin.Context, db *gorm.DB, value interface{}, id string) bool {
+	if res := db.Model(value).Where("id = ?", id).Update("verified", true); res.RowsAffected == 0 || res.Error != nil {
+		log.Println("Error While updating verified status Reason: ", res.Error.Error())
+		BadRequest(c, "Invalid ID or link expired")
+		return false
+	}
+	return true
+}

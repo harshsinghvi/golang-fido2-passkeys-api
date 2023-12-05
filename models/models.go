@@ -7,14 +7,15 @@ import (
 )
 
 // TODO: indexex, unique keys https://stackoverflow.com/questions/63409314/how-do-i-create-unique-constraint-for-multiple-columns, defaults, enums
-// TODO: Email validation
-// Duplicate constraints, savepoints gorm
+// TODO: Email validation, Duplicate constraints, savepoints gorm
+// TODO: Check for default values for bools
 
 type User struct {
 	gorm.Model
-	ID    uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
-	Name  string
-	Email string `gorm:"index:idx_email,unique"`
+	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	Name     string
+	Email    string `gorm:"index:idx_email,unique"`
+	Verified bool   // TODO Update code to check for verified passkeys
 }
 
 type Passkey struct {
@@ -22,6 +23,7 @@ type Passkey struct {
 	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
 	UserID     uuid.UUID `gorm:"index"`
 	Desciption string
+	Verified   bool   // TODO Update code to check for verified passkeys
 	PublicKey  string `gorm:"index:idx_public,unique"`
 }
 

@@ -6,6 +6,7 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"log"
 	"time"
 )
 
@@ -32,6 +33,10 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
+	user.Name = body["Name"].(string)
+	user.Email = body["Email"].(string)
+	user.Verified = false
+
 	if ok := utils.BindBody(body, &user); !ok {
 		handlers.BadRequest(c, "Invalid body")
 		return
@@ -53,6 +58,7 @@ func NewUser(c *gin.Context) {
 	passkey.UserID = user.ID
 	passkey.Desciption = "Default Key"
 	passkey.PublicKey, _ = body["PublicKey"].(string)
+	passkey.Verified = false
 
 	if ok := handlers.CreateInDatabase(c, tx, &passkey, models.Args{"DuplicateMessage": "Public Key already in use, please Generate new keys."}); !ok {
 		tx.Rollback()
@@ -74,6 +80,9 @@ func NewUser(c *gin.Context) {
 	// }
 
 	tx.Commit()
+
+	// TODO: User Verification Here
+	// TODO: Passkey Verification or authorization logic here
 
 	data["PasskeyID"] = passkey.ID
 	data["User"] = user
@@ -184,4 +193,64 @@ func RequestChallengeUsingPublicKey(c *gin.Context) {
 	}
 
 	handlers.StatusOK(c, data, "Challenge Created, Verify to login")
+}
+
+func RegistereNewPasskey(c *gin.Context) {
+	body := handlers.ParseBody(c, []string{"Email", "PublicKey", "Desciption"})
+	data := map[string]interface{}{}
+
+	if body == nil {
+		return
+	}
+	var user models.User
+	if res := database.DB.Where("email = ?", body["Email"]).Find(&user); res.RowsAffected == 0 || res.Error != nil {
+		log.Println(user)
+		if !user.Verified {
+			handlers.BadRequest(c, "Email Not verified please verify")
+			return
+		}
+		handlers.BadRequest(c, "Email address not found. Please check Email address or register new user.")
+		return
+	}
+	var passkey models.Passkey
+
+	passkey.UserID = user.ID
+	passkey.PublicKey = body["PublicKey"].(string)
+	passkey.Desciption = body["Desciption"].(string)
+	passkey.Verified = false
+
+	if ok := handlers.CreateInDatabase(c, database.DB, &passkey, models.Args{"DuplicateMessage": "Public Key already in use, please Generate new keys."}); !ok {
+		return
+	}
+
+	// TODO: Passkey Verification or authorization logic here
+
+	data["PasskeyID"] = passkey.ID
+	handlers.StatusOK(c, data, "Passkey Added. Proceed to verification. check your email for verification code or verification link.")
+}
+
+func VerifyUser(c *gin.Context) {
+	id := c.Param("id")
+	data := map[string]interface{}{}
+	var user models.User
+
+	if ok := handlers.MarkVerified(c, database.DB, &user, id); !ok {
+		return
+	}
+
+	data["UserID"] = id
+	handlers.StatusOK(c, data, "User Verified")
+}
+
+func VerifyPasskey(c *gin.Context) {
+	id := c.Param("id")
+	data := map[string]interface{}{}
+	var passkey models.Passkey
+
+	if ok := handlers.MarkVerified(c, database.DB, &passkey, id); !ok {
+		return
+	}
+
+	data["PasskeyID"] = id
+	handlers.StatusOK(c, data, "Passkey Verified")
 }

@@ -1,12 +1,11 @@
 package controllers
 
 import (
-	"log"
-
 	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"log"
 )
 
 func AuthMidlweare() gin.HandlerFunc {

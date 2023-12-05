@@ -32,7 +32,10 @@ func main() {
 		api.POST("/login/verify-challenge", controllers.VerifyChallenge)
 		api.GET("/login/request-challenge/:passkey", controllers.RequestChallenge)
 		api.GET("/login/request-challenge", controllers.RequestChallengeUsingPublicKey)
-		// TODO: auth routes - register new key , check token, business logic
+		api.POST("/register/passkey", controllers.RegistereNewPasskey)
+		api.GET("/verify/passkey/:id", controllers.VerifyPasskey)
+		// api.GET("/verify/user/:id", controllers.RegistereNewPasskey)
+		// TODO: auth routes - register new key, business logic
 
 		protectedRoutes := api.Group("/protected", controllers.AuthMidlweare())
 		{
