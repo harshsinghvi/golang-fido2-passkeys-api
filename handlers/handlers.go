@@ -1,15 +1,12 @@
 package handlers
 
 import (
-	"encoding/base64"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/jackc/pgerrcode"
-	"github.com/mitchellh/mapstructure"
+	"gorm.io/gorm"
 	"log"
 	"net/http"
 	"strings"
@@ -67,66 +64,39 @@ func ParseBody(c *gin.Context, keys []string) map[string]interface{} {
 	return body
 }
 
-func ParseBodyAndBind(c *gin.Context, keys []string, data interface{}) bool {
-	body := ParseBody(c, keys)
-
-	if body == nil {
-		InternalServerError(c)
-		return false
+func CreateInDatabase(c *gin.Context, db *gorm.DB, value interface{}, args ...models.Args) bool {
+	if len(args) == 0 {
+		args = append(args, make(map[string]interface{}))
 	}
-
-	if err := mapstructure.Decode(body, &data); err != nil {
-		InternalServerError(c)
-		return false
-	}
-	return true
-}
-
-func CreateInDatabase(c *gin.Context, value interface{}) bool {
-	if res := database.DB.Create(value); res.RowsAffected == 0 || res.Error != nil {
+	if res := db.Create(value); res.RowsAffected == 0 || res.Error != nil {
 		switch code, _ := utils.PgErrorCodeAndMessage(res.Error); code {
 		case pgerrcode.UniqueViolation:
+			if duplicateMessage, ok := args[0]["DuplicateMessage"].(string); ok {
+				BadRequest(c, duplicateMessage)
+				break
+			}
 			BadRequest(c, "Duplicate Fields")
-			return false
 		default:
 			log.Printf("Error While Creating in database: %s", res.Error.Error())
 			InternalServerError(c)
-			return false
 		}
+		return false
 	}
 	return true
 }
 
-func VerifySignature(publicKeyStr string, signatureStr string, message string) bool {
-	publicKey, err := crypto.ParsePublicKey(publicKeyStr)
-	if err != nil {
-		log.Println("Error While parsing public key from db", err)
-	}
-
-	signature, err := base64.StdEncoding.DecodeString(signatureStr)
-	if err != nil {
-		log.Println("Error Parsing signature :", err)
-		return false
-	}
-
-	err = crypto.VerifySignature(signature, publicKey, message)
-	if err != nil {
-		fmt.Println("Signature verification failed:", err)
-		return false
-	}
-
-	return true
-}
-
-func CreateChallenge(c *gin.Context, data map[string]interface{}, passkey models.Passkey) bool {
+func CreateChallenge(c *gin.Context, db *gorm.DB, data map[string]interface{}, passkey models.Passkey, args ...models.Args) bool {
 	challengeString, challenge, err := utils.CreateChallenge(passkey.PublicKey)
-
 	challenge.UserID = passkey.UserID
 	challenge.PasskeyID = passkey.ID
 	challenge.Status = "PENDING"
 	challenge.Expiry = time.Now().AddDate(0, 0, 10)
 
-	if ok := CreateInDatabase(c, &challenge); !ok || err != nil {
+	if err != nil {
+		InternalServerError(c)
+		return false
+	}
+	if ok := CreateInDatabase(c, db, &challenge, args...); !ok {
 		return false
 	}
 

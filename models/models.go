@@ -61,3 +61,5 @@ type Passkeys []Passkey
 type PasskeyPrivateKeys []PasskeyPrivateKey
 type Challenges []Challenge
 type AccessTokens []AccessToken
+
+type Args map[string]interface{}

@@ -6,7 +6,6 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
-	"github.com/mitchellh/mapstructure"
 	"time"
 )
 
@@ -23,28 +22,31 @@ import (
 func NewUser(c *gin.Context) {
 	var user models.User
 	var passkey models.Passkey
-	// var passkeyPrivateKey models.PasskeyPrivateKey
-
 	data := map[string]interface{}{}
 
+	// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
+	// var passkeyPrivateKey models.PasskeyPrivateKey
 	// body := handlers.ParseBody(c, []string{"Email", "Name", "PrivateKey", "PublicKey"})
 	body := handlers.ParseBody(c, []string{"Email", "Name", "PublicKey"})
 	if body == nil {
-		handlers.InternalServerError(c)
 		return
 	}
 
-	if err := mapstructure.Decode(body, &user); err != nil {
-		handlers.InternalServerError(c)
+	if ok := utils.BindBody(body, &user); !ok {
+		handlers.BadRequest(c, "Invalid body")
 		return
 	}
 
+	// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
 	// if ok := crypto.ValidatePublicAndPrivateKeys(body["PrivateKey"].(string), body["PublicKey"].(string)); !ok {
 	// 	handlers.BadRequest(c, "Invalid Public / Private Keys")
 	// 	return
 	// }
 
-	if ok := handlers.CreateInDatabase(c, &user); !ok {
+	tx := database.DB.Begin()
+
+	if ok := handlers.CreateInDatabase(c, tx, &user, models.Args{"DuplicateMessage": "Email address already in use, Please use different Email address"}); !ok {
+		tx.Rollback()
 		return
 	}
 
@@ -52,22 +54,26 @@ func NewUser(c *gin.Context) {
 	passkey.Desciption = "Default Key"
 	passkey.PublicKey, _ = body["PublicKey"].(string)
 
-	if ok := handlers.CreateInDatabase(c, &passkey); !ok {
+	if ok := handlers.CreateInDatabase(c, tx, &passkey, models.Args{"DuplicateMessage": "Public Key already in use, please Generate new keys."}); !ok {
+		tx.Rollback()
 		return
 	}
 
+	if ok := handlers.CreateChallenge(c, tx, data, passkey); !ok {
+		tx.Rollback()
+		return
+	}
+
+	// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
 	// passkeyPrivateKey.UserID = user.ID
 	// passkeyPrivateKey.PasskeyID = passkey.ID
 	// passkeyPrivateKey.PrivateKey, _ = body["PrivateKey"].(string)
-
-	// if ok := handlers.CreateInDatabase(c, &passkeyPrivateKey); !ok {
+	// if ok := handlers.CreateInDatabase(c, tx, &passkeyPrivateKey, models.Args{"tx": tx}); !ok {
+	// 	tx.Rollback()
 	// 	return
 	// }
 
-	if ok := handlers.CreateChallenge(c, data, passkey); !ok {
-		handlers.InternalServerError(c)
-		return
-	}
+	tx.Commit()
 
 	data["PasskeyID"] = passkey.ID
 	data["User"] = user
@@ -76,14 +82,13 @@ func NewUser(c *gin.Context) {
 
 func VerifyChallenge(c *gin.Context) {
 	data := map[string]interface{}{}
+	var challenge models.Challenge
+	var passkey models.Passkey
 
 	body := handlers.ParseBody(c, []string{"ChallengeID", "ChallengeSignature"})
 	if body == nil {
 		return
 	}
-
-	var challenge models.Challenge
-	var passkey models.Passkey
 
 	if res := database.DB.Where("id = ?  AND expiry > now()", body["ChallengeID"].(string)).Find(&challenge); res.RowsAffected == 0 {
 		handlers.BadRequest(c, "Invalid/Expired ChallengeID")
@@ -106,7 +111,7 @@ func VerifyChallenge(c *gin.Context) {
 		return
 	}
 
-	if ok := handlers.VerifySignature(passkey.PublicKey, body["ChallengeSignature"].(string), message); !ok {
+	if ok := utils.VerifySignature(passkey.PublicKey, body["ChallengeSignature"].(string), message); !ok {
 		// Update Database
 		challenge.Status = "FAILED"
 		database.DB.Save(&challenge)
@@ -127,7 +132,7 @@ func VerifyChallenge(c *gin.Context) {
 		return
 	}
 
-	if ok := handlers.CreateInDatabase(c, &accessToken); !ok {
+	if ok := handlers.CreateInDatabase(c, database.DB, &accessToken); !ok {
 		return
 	}
 
@@ -136,12 +141,12 @@ func VerifyChallenge(c *gin.Context) {
 
 	data["TokenExpiry"] = accessToken.Expiry
 	data["Token"] = accessToken.Token
+
 	handlers.StatusOK(c, data, "Challenge Verification Successful")
 }
 
 func RequestChallenge(c *gin.Context) {
 	passkeyId := c.Param("passkey")
-
 	data := map[string]interface{}{}
 	var passkey models.Passkey
 
@@ -150,7 +155,7 @@ func RequestChallenge(c *gin.Context) {
 		return
 	}
 
-	if ok := handlers.CreateChallenge(c, data, passkey); !ok {
+	if ok := handlers.CreateChallenge(c, database.DB, data, passkey); !ok {
 		handlers.InternalServerError(c)
 		return
 	}
@@ -159,22 +164,21 @@ func RequestChallenge(c *gin.Context) {
 }
 
 func RequestChallengeUsingPublicKey(c *gin.Context) {
-	publicKey := c.GetHeader("Public-Key")
+	data := map[string]interface{}{}
+	var passkey models.Passkey
+	var publicKeyStr string
 
-	if publicKey == "" {
+	if publicKeyStr = c.GetHeader("Public-Key"); publicKeyStr == "" {
 		handlers.BadRequest(c, "Public-Key Header not found")
 		return
 	}
 
-	data := map[string]interface{}{}
-	var passkey models.Passkey
-
-	if res := database.DB.Where("public_key = ?", publicKey).Find(&passkey); res.RowsAffected == 0 {
+	if res := database.DB.Where("public_key = ?", publicKeyStr).Find(&passkey); res.RowsAffected == 0 {
 		handlers.BadRequest(c, "Invalid passkey")
 		return
 	}
 
-	if ok := handlers.CreateChallenge(c, data, passkey); !ok {
+	if ok := handlers.CreateChallenge(c, database.DB, data, passkey); !ok {
 		handlers.InternalServerError(c)
 		return
 	}

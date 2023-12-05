@@ -2,12 +2,11 @@ package database
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
 )
 
 var DB *gorm.DB
@@ -32,6 +31,7 @@ func ConnectDb() {
 	DB.AutoMigrate(&models.Passkey{})
 	DB.AutoMigrate(&models.Challenge{})
 	DB.AutoMigrate(&models.AccessToken{})
+	// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
 	// DB.AutoMigrate(&models.PasskeyPrivateKey{})
 
 	tx := DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
