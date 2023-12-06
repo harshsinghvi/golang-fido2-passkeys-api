@@ -10,6 +10,26 @@ import (
 	"net/http"
 )
 
+func parseJson(resp *http.Response) map[string]interface{} {
+	var data map[string]interface{}
+	resBody, err := io.ReadAll(resp.Body)
+	e(err)
+	err = json.Unmarshal(resBody, &data)
+	e(err)
+	return data
+}
+
+func prettyPrintAny(data interface{}) {
+	bytes, _ := json.MarshalIndent(data, "", "    ")
+	log.Printf("%s", bytes)
+}
+
+func prettyPrintResp(resp *http.Response) {
+	data := parseJson(resp)
+	bytes, _ := json.MarshalIndent(data, "", "    ")
+	log.Printf("%s", bytes)
+}
+
 func login(serverUrl string) {
 	url := getServerURL(serverUrl)
 
@@ -46,6 +66,9 @@ func login(serverUrl string) {
 }
 
 func userReg(name string, email string, serverUrl string) {
+	if email == "" {
+		log.Fatal("Specify email using -e")
+	}
 	url := getServerURL(serverUrl)
 	publicKey, err := crypto.LoadPublicKeyFromFile(PUBLIC_KEY_PATH)
 	e(err, "Error in reading Public Key file, pelase generate new files by cli gen")
@@ -81,6 +104,7 @@ func userReg(name string, email string, serverUrl string) {
 	challengeID, _ := data["data"].(map[string]interface{})["ChallengeID"].(string)
 	challengeStr, _ := data["data"].(map[string]interface{})["ChallengeString"].(string)
 	verifyChallenge(url, challengeID, challengeStr)
+	log.Println("INFO:  Please verify user check your inbox for instructions.")
 }
 
 func verifyChallenge(url string, challengeID string, challengeStr string) {
@@ -117,21 +141,14 @@ func verifyChallenge(url string, challengeID string, challengeStr string) {
 		ServerUrl:   url,
 		AccessToken: token,
 	}, CONFIG_PATH)
-	log.Println("INFO: Challenge Verification Successful, Passkey Verified Access token stored. please verify user check your inbox for instructions.")
-}
-
-func parseJson(resp *http.Response) map[string]interface{} {
-	var data map[string]interface{}
-	resBody, err := io.ReadAll(resp.Body)
-	e(err)
-	err = json.Unmarshal(resBody, &data)
-	e(err)
-	return data
+	log.Println("INFO: Challenge Verification Successful, Passkey Verified Access token stored.")
 }
 
 func getMe() {
 	config := readConfigFromFile(CONFIG_PATH)
-
+	if config.AccessToken == "" {
+		log.Fatal("Please login / register to continue")
+	}
 	client := http.Client{}
 	req, err := http.NewRequest("GET", config.ServerUrl+"/api/protected/get-me", nil)
 	req.Header.Add("token", config.AccessToken)
@@ -151,7 +168,37 @@ func getMe() {
 		}
 		log.Fatalf("status code error: %d %s", resp.StatusCode, resp.Status)
 	}
-	data := parseJson(resp)
-	bytes, _ := json.MarshalIndent(data, "", "    ")
-	log.Printf("%s", bytes)
+	prettyPrintResp(resp)
+	prettyPrintAny(config)
+}
+
+func addKey(email string, desciption string, serverUrl string) {
+	if email == "" {
+		log.Fatal("Specify email using -e")
+	}
+	url := getServerURL(serverUrl)
+	publicKey, err := crypto.LoadPublicKeyFromFile(PUBLIC_KEY_PATH)
+	e(err, "Error in reading Public Key file, pelase generate new files by cli gen")
+	publicKeyStr, err := crypto.PublicKeyToString(publicKey) // Convert public key to string
+	e(err)
+
+	jsonValue, err := json.Marshal(map[string]string{"Email": email, "PublicKey": publicKeyStr, "Desciption": desciption})
+	e(err)
+	resp, err := http.Post(url+"/api/register/passkey", "application/json", bytes.NewBuffer(jsonValue))
+	e(err)
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		// if the status code is not 200, we should log the status code and the
+		// status string, then exit with a fatal error
+		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
+			// print the response
+			data, err := io.ReadAll(resp.Body)
+			e(err)
+
+			log.Fatalf("BAD Request status code error: %d %s \n %s", resp.StatusCode, resp.Status, string(data))
+		}
+		log.Fatalf("status code error: %d %s", resp.StatusCode, resp.Status)
+	}
+	log.Println("INFO: Key Added. please authorise key check your inbox")
+	prettyPrintResp(resp)
 }

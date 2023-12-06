@@ -211,13 +211,15 @@ func RequestChallengeUsingPublicKey(c *gin.Context) {
 }
 
 func RegistereNewPasskey(c *gin.Context) {
-	body := handlers.ParseBody(c, []string{"Email", "PublicKey", "Desciption"})
 	data := map[string]interface{}{}
+	var user models.User
+	var passkey models.Passkey
+	body := handlers.ParseBody(c, []string{"Email", "PublicKey", "Desciption"})
 
 	if body == nil {
 		return
 	}
-	var user models.User
+
 	if res := database.DB.Where("email = ?", body["Email"]).Find(&user); res.RowsAffected == 0 || res.Error != nil {
 		if !user.Verified {
 			handlers.BadRequest(c, "Email Not verified please verify")
@@ -226,8 +228,11 @@ func RegistereNewPasskey(c *gin.Context) {
 		handlers.BadRequest(c, "Email address not found. Please check Email address or register new user.")
 		return
 	}
-	var passkey models.Passkey
 
+	if !user.Verified {
+		handlers.BadRequest(c, "User not verified, please check your inbox for instructions")
+		return
+	}
 	passkey.UserID = user.ID
 	passkey.PublicKey = body["PublicKey"].(string)
 	passkey.Desciption = body["Desciption"].(string)
@@ -244,19 +249,17 @@ func RegistereNewPasskey(c *gin.Context) {
 
 func VerifyPasskey(c *gin.Context) {
 	id := c.Param("id")
-	data := map[string]interface{}{}
 	var passkey models.Passkey
 
 	if ok := handlers.MarkVerified(c, database.DB, &passkey, "id", id, "verified", true); !ok {
 		return
 	}
 
-	handlers.StatusOK(c, data, "Passkey Verified")
+	handlers.StatusOK(c, nil, "Passkey Verified")
 }
 
 func VerifyUser(c *gin.Context) {
 	id := c.Param("id")
-	data := map[string]interface{}{}
 	var user models.User
 	var passkey models.Passkey
 	var accessToken models.AccessToken
@@ -288,5 +291,5 @@ func VerifyUser(c *gin.Context) {
 		return
 	}
 
-	handlers.StatusOK(c, data, "User Verified")
+	handlers.StatusOK(c, nil, "User Verified")
 }
