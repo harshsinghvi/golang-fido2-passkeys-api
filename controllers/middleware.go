@@ -22,14 +22,15 @@ func AuthMidlweare() gin.HandlerFunc {
 
 		if res.RowsAffected == 0 || res.Error != nil {
 			if res.Error != nil {
-				log.Println("Error in querring auth token, Reason :", res.Error.Error())
+				log.Println("Error in querring auth token, Reason :", res.Error)
 			}
 			handlers.UnauthorisedRequest(c)
 			return
 		}
 
 		c.Set("token", accessToken.Token)
-		c.Set("user_id", accessToken.UserID)
+		c.Set("user_id", accessToken.UserID.String())
+		c.Set("user_id_uuid", accessToken.UserID)
 		c.Next()
 	}
 }

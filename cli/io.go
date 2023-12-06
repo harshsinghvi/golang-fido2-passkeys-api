@@ -26,7 +26,6 @@ func ensureDirectoryExists(dirPath string) {
 type Config struct {
 	ServerUrl   string `yaml:"ServerUrl"`
 	AccessToken string `yaml:"AccessToken"`
-	PasskeyID   string `yaml:"PasskeyID"`
 }
 
 // Function to read configurations from a YAML file

@@ -15,3 +15,7 @@ func NewUUID() uuid.UUID {
 func NewUUIDStr() string {
 	return NewUUID().String()
 }
+
+func UUIDToStr(id uuid.UUID) string {
+	return id.String()
+}
