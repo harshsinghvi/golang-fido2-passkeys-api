@@ -6,8 +6,7 @@ import (
 	"time"
 )
 
-// TODO: indexex, unique keys https://stackoverflow.com/questions/63409314/how-do-i-create-unique-constraint-for-multiple-columns, defaults, enums
-// TODO: Email validation, Duplicate constraints, savepoints gorm
+// TODO: Email validation,
 // TODO: Check for default values for bools
 
 type User struct {
@@ -27,13 +26,14 @@ type Passkey struct {
 	PublicKey  string `gorm:"index:idx_public,unique"`
 }
 
-type PasskeyPrivateKey struct {
-	gorm.Model
-	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
-	UserID     uuid.UUID `gorm:"index"`
-	PasskeyID  uuid.UUID `gorm:"index"`
-	PrivateKey string
-}
+// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
+// type PasskeyPrivateKey struct {
+// 	gorm.Model
+// 	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+// 	UserID     uuid.UUID `gorm:"index"`
+// 	PasskeyID  uuid.UUID `gorm:"index"`
+// 	PrivateKey string
+// }
 
 type Challenge struct {
 	gorm.Model
@@ -60,8 +60,10 @@ type AccessToken struct {
 
 type Users []User
 type Passkeys []Passkey
-type PasskeyPrivateKeys []PasskeyPrivateKey
 type Challenges []Challenge
 type AccessTokens []AccessToken
+
+// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
+// type PasskeyPrivateKeys []PasskeyPrivateKey
 
 type Args map[string]interface{}
