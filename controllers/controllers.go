@@ -6,7 +6,6 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
-	"log"
 	"time"
 )
 
@@ -86,9 +85,13 @@ func NewUser(c *gin.Context) {
 	// TODO: Passkey Verification or authorization logic here
 
 	// TODO: Avoid sending keys at front end
-	data["PasskeyID"] = passkey.ID
-	data["User"] = user
-	handlers.StatusOK(c, data, "User Created, please complete Registration by completing challenge")
+	// data["PasskeyID"] = passkey.ID
+	data["User"] = models.User{
+		Name:  user.Name,
+		Email: user.Email,
+	}
+
+	handlers.StatusOK(c, data, "User Created, please complete Registration by verifing Email, please check your inbox for verification instructions")
 }
 
 func VerifyChallenge(c *gin.Context) {
@@ -111,8 +114,8 @@ func VerifyChallenge(c *gin.Context) {
 		return
 	}
 
-	if time.Until(challenge.Expiry).Seconds() <= 0 || challenge.Status == "SUCCESS" {
-		handlers.BadRequest(c, "Challenge Verified Failed, Challenge Expired or Challenge already verified")
+	if time.Until(challenge.Expiry).Seconds() <= 0 || challenge.Status == "SUCCESS" || challenge.Status == "FAILED" {
+		handlers.BadRequest(c, "Challenge Verified Failed, Challenge Expired or Challenge already Verified or Failed")
 		return
 	}
 
@@ -135,7 +138,7 @@ func VerifyChallenge(c *gin.Context) {
 	accessToken.PasskeyID = challenge.PasskeyID
 	accessToken.ChallengeID = challenge.ID
 	accessToken.Token = utils.GenerateToken(challenge.ID.String())
-	accessToken.Disabled = false
+	accessToken.Disabled = !passkey.Verified // passkey.Verified == false // Token must be disabled when the passkey is not verified
 	accessToken.Expiry = time.Now().AddDate(0, 0, 10)
 
 	if accessToken.Token == "" {
@@ -166,6 +169,11 @@ func RequestChallenge(c *gin.Context) {
 		return
 	}
 
+	if !passkey.Verified {
+		handlers.BadRequest(c, "Passkey Not Authorised, please authorise before using.")
+		return
+	}
+
 	if ok := handlers.CreateChallenge(c, database.DB, data, passkey); !ok {
 		handlers.InternalServerError(c)
 		return
@@ -189,6 +197,11 @@ func RequestChallengeUsingPublicKey(c *gin.Context) {
 		return
 	}
 
+	if !passkey.Verified {
+		handlers.BadRequest(c, "Passkey Not Authorised, please authorise before using.")
+		return
+	}
+
 	if ok := handlers.CreateChallenge(c, database.DB, data, passkey); !ok {
 		handlers.InternalServerError(c)
 		return
@@ -206,7 +219,6 @@ func RegistereNewPasskey(c *gin.Context) {
 	}
 	var user models.User
 	if res := database.DB.Where("email = ?", body["Email"]).Find(&user); res.RowsAffected == 0 || res.Error != nil {
-		log.Println(user)
 		if !user.Verified {
 			handlers.BadRequest(c, "Email Not verified please verify")
 			return
@@ -227,21 +239,7 @@ func RegistereNewPasskey(c *gin.Context) {
 
 	// TODO: Passkey Verification or authorization logic here
 
-	data["PasskeyID"] = passkey.ID
 	handlers.StatusOK(c, data, "Passkey Added. Proceed to verification. check your email for verification code or verification link.")
-}
-
-func VerifyUser(c *gin.Context) {
-	id := c.Param("id")
-	data := map[string]interface{}{}
-	var user models.User
-
-	if ok := handlers.MarkVerified(c, database.DB, &user, id); !ok {
-		return
-	}
-
-	data["UserID"] = id
-	handlers.StatusOK(c, data, "User Verified")
 }
 
 func VerifyPasskey(c *gin.Context) {
@@ -249,10 +247,46 @@ func VerifyPasskey(c *gin.Context) {
 	data := map[string]interface{}{}
 	var passkey models.Passkey
 
-	if ok := handlers.MarkVerified(c, database.DB, &passkey, id); !ok {
+	if ok := handlers.MarkVerified(c, database.DB, &passkey, "id", id, "verified", true); !ok {
 		return
 	}
 
-	data["PasskeyID"] = id
 	handlers.StatusOK(c, data, "Passkey Verified")
+}
+
+func VerifyUser(c *gin.Context) {
+	id := c.Param("id")
+	data := map[string]interface{}{}
+	var user models.User
+	var passkey models.Passkey
+	var accessToken models.AccessToken
+
+	tx := database.DB.Begin()
+
+	tx.First(&user, "id = ?", id)
+	if user.Verified {
+		handlers.BadRequest(c, "User Already Verified.")
+		return
+	}
+
+	if ok := handlers.MarkVerified(c, tx, &user, "id", id, "verified", true); !ok {
+		tx.Rollback()
+		return
+	}
+
+	if ok := handlers.MarkVerified(c, tx, &passkey, "user_id", id, "verified", true); !ok {
+		tx.Rollback()
+		return
+	}
+
+	if ok := handlers.MarkVerified(c, tx, &accessToken, "user_id", id, "disabled", false); !ok {
+		tx.Rollback()
+		return
+	}
+
+	if ok := handlers.TxCommit(c, tx); !ok {
+		return
+	}
+
+	handlers.StatusOK(c, data, "User Verified")
 }

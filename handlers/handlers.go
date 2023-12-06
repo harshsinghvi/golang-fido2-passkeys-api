@@ -77,7 +77,7 @@ func CreateInDatabase(c *gin.Context, db *gorm.DB, value interface{}, args ...mo
 			}
 			BadRequest(c, "Duplicate Fields")
 		default:
-			log.Printf("Error While Creating in database: %s", res.Error.Error())
+			log.Printf("Error While Creating in database: %s", res.Error)
 			InternalServerError(c)
 		}
 		return false
@@ -117,10 +117,19 @@ func ExternalRedirect(url string) gin.HandlerFunc {
 	}
 }
 
-func MarkVerified(c *gin.Context, db *gorm.DB, value interface{}, id string) bool {
-	if res := db.Model(value).Where("id = ?", id).Update("verified", true); res.RowsAffected == 0 || res.Error != nil {
-		log.Println("Error While updating verified status Reason: ", res.Error.Error())
+func MarkVerified(c *gin.Context, db *gorm.DB, value interface{}, idField string, id string, updateField string, updateValue bool) bool {
+	if res := db.Model(value).Where(idField+" = ?", id).Update(updateField, updateValue); res.RowsAffected == 0 || res.Error != nil {
+		log.Println("Error While updating verified status Reason: ", res.Error)
 		BadRequest(c, "Invalid ID or link expired")
+		return false
+	}
+	return true
+}
+
+func TxCommit(c *gin.Context, tx *gorm.DB) bool {
+	if res := tx.Commit(); res.Error != nil {
+		log.Println("Error Comiting Txn, ", res.Error)
+		BadRequest(c, "Bad Request")
 		return false
 	}
 	return true
