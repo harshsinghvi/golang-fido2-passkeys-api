@@ -9,6 +9,7 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/autoroutes"
 	"github.com/joho/godotenv"
@@ -46,7 +47,7 @@ func main() {
 		api.GET("/verify/user/:id", controllers.VerifyUser)
 
 		// INFO: Experimantal
-		adminRouter := api.Group("/admin/auto", controllers.ConfigMW(models.Args{"BillingDisable": true}))
+		adminRouter := api.Group("/admin/auto", controllers.ConfigMW(models.Args{"BillingDisable": true}), controllers.AuthMW(roles.SuperAdmin))
 		{
 			routes := []autoroutes.Route{
 				autoroutes.NewRoute(&[]models.User{}, "id", "name", "email"),

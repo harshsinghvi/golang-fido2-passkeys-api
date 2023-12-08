@@ -50,18 +50,17 @@ you can import or export keys in this folder
 
 ## TODO
 
-- email validation
-- public key validation
-
 - Workflow for releasing binaries
-- demo business logic (todo app)
-- demo business logic cli
-
+- verification expiry and updated verification process
+- public key validation
 - delete or disabled endpoint
-- email verification after user creation
-- verification expiry
-- new passkey registration (followed by authorisation using email verification)
-- audit logs
 - token roles
+- token user
 - orgs
 - user profile
+- ~~email validation~~
+- ~~demo business logic (todo app)~~
+- ~~demo business logic cli~~
+- ~~email verification after user creation~~
+- ~~new passkey registration (followed by authorisation using email verification)~~
+- ~~audit logs~~

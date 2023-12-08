@@ -1,19 +1,23 @@
 package controllers
 
 import (
+	"log"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
-	"log"
-	"time"
 )
 
-func AuthMW() gin.HandlerFunc {
+func AuthMW(requiredRoles ...string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var accessToken models.AccessToken
+		var user models.User
+
 		token := c.GetHeader("token")
 
 		if token == "" {
@@ -31,10 +35,20 @@ func AuthMW() gin.HandlerFunc {
 			return
 		}
 
+		if ok := handlers.GetById(database.DB, &user, accessToken.UserID.String()); !ok {
+			handlers.BadRequest(c, "Bad Request")
+			return
+		}
+
+		if ok := roles.CheckRoles(requiredRoles, user.Roles); !ok {
+			handlers.UnauthorisedRequest(c)
+		}
+
 		c.Set("token", accessToken.Token)
 		c.Set("token_id_uuid", accessToken.ID)
 		c.Set("user_id", accessToken.UserID.String())
 		c.Set("user_id_uuid", accessToken.UserID)
+
 		c.Next()
 	}
 }

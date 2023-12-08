@@ -1,19 +1,22 @@
 package models
 
 import (
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
 // TODO: Check for default values for bools
 
 type User struct {
 	gorm.Model
-	ID       uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	ID       uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	Email    string         `gorm:"index:idx_email,unique"`
+	Roles    pq.StringArray `gorm:"type:text[]"`
 	Name     string
-	Email    string `gorm:"index:idx_email,unique"`
-	Verified bool   // TODO Update code to check for verified passkeys
+	Verified bool // TODO Update code to check for verified passkeys
 }
 
 type Passkey struct {

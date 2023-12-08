@@ -12,7 +12,7 @@ func GetMe(c *gin.Context) {
 	// data["Token"], _ = c.Get("token")
 	userId, _ := c.Get("user_id")
 	var user models.User
-	if ok := handlers.GetById(c, database.DB, &user, userId.(string)); !ok {
+	if ok := handlers.GetById(database.DB, &user, userId.(string)); !ok {
 		handlers.BadRequest(c, "No Data Found")
 		return
 	}

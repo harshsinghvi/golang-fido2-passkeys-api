@@ -54,7 +54,7 @@ func StatusOKPag(c *gin.Context, data interface{}, pag pagination.Pagination, me
 func UnauthorisedRequest(c *gin.Context) {
 	c.JSON(http.StatusUnauthorized, gin.H{
 		"status":  http.StatusUnauthorized,
-		"message": "Unauthorised request token invalid/expired/disabled.",
+		"message": "Unauthorised request token invalid/expired/disabled/insufficient roles/permissions.",
 	})
 	c.Abort()
 }
@@ -142,7 +142,7 @@ func TxCommit(c *gin.Context, tx *gorm.DB) bool {
 	return true
 }
 
-func GetById(c *gin.Context, db *gorm.DB, value interface{}, id string) bool {
+func GetById(db *gorm.DB, value interface{}, id string) bool {
 	if res := db.First(value, "id = ?", id); res.RowsAffected == 0 || res.Error != nil {
 		return false
 	}

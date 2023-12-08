@@ -1,12 +1,15 @@
 package controllers
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
-	"time"
+	"github.com/lib/pq"
 )
 
 // TODO: Update Latter
@@ -36,6 +39,7 @@ func NewUser(c *gin.Context) {
 	user.Name = body["Name"].(string)
 	user.Email = body["Email"].(string)
 	user.Verified = false
+	user.Roles = pq.StringArray{roles.User}
 
 	if ok := utils.BindBody(body, &user); !ok {
 		handlers.BadRequest(c, "Invalid body")
