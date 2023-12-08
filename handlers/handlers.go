@@ -3,12 +3,14 @@ package handlers
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/jackc/pgerrcode"
 	"gorm.io/gorm"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -65,17 +67,11 @@ func ParseBody(c *gin.Context, keys []string) map[string]interface{} {
 }
 
 func CreateInDatabase(c *gin.Context, db *gorm.DB, value interface{}, args ...models.Args) bool {
-	if len(args) == 0 {
-		args = append(args, make(map[string]interface{}))
-	}
 	if res := db.Create(value); res.RowsAffected == 0 || res.Error != nil {
 		switch code, _ := utils.PgErrorCodeAndMessage(res.Error); code {
 		case pgerrcode.UniqueViolation:
-			if duplicateMessage, ok := args[0]["DuplicateMessage"].(string); ok {
-				BadRequest(c, duplicateMessage)
-				break
-			}
-			BadRequest(c, "Duplicate Fields")
+			message := utils.ParseArgs(args, "DuplicateMessage", "Duplicate Fields").(string)
+			BadRequest(c, message)
 		default:
 			log.Printf("Error While Creating in database: %s", res.Error)
 			InternalServerError(c)
@@ -134,9 +130,37 @@ func TxCommit(c *gin.Context, tx *gorm.DB) bool {
 	}
 	return true
 }
+
 func GetById(c *gin.Context, db *gorm.DB, value interface{}, id string) bool {
 	if res := db.First(value, "id = ?", id); res.RowsAffected == 0 || res.Error != nil {
 		return false
 	}
 	return true
+}
+
+func LogReqToDb(c *gin.Context, db *gorm.DB, reqId uuid.UUID, reqStart time.Time) {
+	accessTokenId, isAuthenticated := c.Get("token_id")
+	billingDisable := c.GetBool("BillingDisable")
+	hostname, _ := os.Hostname()
+	
+	accessLog := &models.AccessLog{
+		ID:             reqId,
+		RequestID:      reqId,
+		Path:           c.Request.URL.Path,
+		ServerHostname: hostname,
+		ResponseSize:   c.Writer.Size(),
+		StatusCode:     c.Writer.Status(),
+		ClientIP:       c.ClientIP(),
+		Method:         c.Request.Method,
+		ResponseTime:   time.Since(reqStart).Milliseconds(),
+		Billed:         !isAuthenticated || billingDisable,
+	}
+
+	if isAuthenticated {
+		accessLog.TokenID = accessTokenId.(uuid.UUID)
+	}
+
+	if ok := CreateInDatabase(c, db, accessLog); !ok {
+		log.Println("Error in recording log in db")
+	}
 }

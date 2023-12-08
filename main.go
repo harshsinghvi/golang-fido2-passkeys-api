@@ -6,6 +6,7 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/controllers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/joho/godotenv"
 	"log"
@@ -26,7 +27,7 @@ func main() {
 	PORT := utils.GetEnv("PORT", "8080")
 
 	router := gin.Default()
-	api := router.Group("/api")
+	api := router.Group("/api", controllers.LoggerMW())
 	{
 		api.POST("/registration/user", controllers.NewUser)
 		api.POST("/login/verify-challenge", controllers.VerifyChallenge)
@@ -37,9 +38,10 @@ func main() {
 		api.GET("/verify/user/:id", controllers.VerifyUser)
 		// TODO: auth routes - register new key, business logic
 
-		protectedRoutes := api.Group("/protected", controllers.AuthMidlweare())
+		protectedRoutes := api.Group("/protected", controllers.AuthMW())
 		{
-			protectedRoutes.GET("/get-me", controllers.GetMe)
+			// INFO: USE OF ConfigMW(models.Args{"BillingDisable": false})
+			protectedRoutes.GET("/get-me", controllers.ConfigMW(models.Args{"BillingDisable": false}), controllers.GetMe)
 		}
 	}
 

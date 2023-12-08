@@ -22,8 +22,8 @@ type Passkey struct {
 	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
 	UserID     uuid.UUID `gorm:"index"`
 	Desciption string
-	Verified   bool   // TODO Update code to check for verified passkeys
 	PublicKey  string `gorm:"index:idx_public,unique"`
+	Verified   bool   // TODO Update code to check for verified passkeys
 }
 
 // INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
@@ -58,12 +58,20 @@ type AccessToken struct {
 	Expiry      time.Time `gorm:"index:idx_access_token"`
 }
 
-type Users []User
-type Passkeys []Passkey
-type Challenges []Challenge
-type AccessTokens []AccessToken
-
-// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
-// type PasskeyPrivateKeys []PasskeyPrivateKey
+type AccessLog struct {
+	gorm.Model
+	ID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	TokenID        uuid.UUID `gorm:"index:idx_access_logs"`
+	RequestID      uuid.UUID `gorm:"index:idx_access_logs"`
+	Path           string    `gorm:"index:idx_access_logs"`
+	ClientIP       string
+	Method         string    `gorm:"index:idx_access_logs"`
+	StatusCode     int       `gorm:"index:idx_access_logs"`
+	BillID         uuid.UUID `gorm:"index:idx_access_logs"`
+	Billed         bool
+	ResponseTime   int64
+	ResponseSize   int
+	ServerHostname string
+}
 
 type Args map[string]interface{}
