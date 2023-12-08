@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/pagination"
 	"github.com/jackc/pgerrcode"
 	"gorm.io/gorm"
 	"log"
@@ -36,6 +37,16 @@ func StatusOK(c *gin.Context, data interface{}, message string) {
 		"status":  http.StatusOK,
 		"message": message,
 		"data":    data,
+	})
+	c.Abort()
+}
+
+func StatusOKPag(c *gin.Context, data interface{}, pag pagination.Pagination, message string) {
+	c.JSON(http.StatusOK, gin.H{
+		"status":     http.StatusOK,
+		"message":    message,
+		"data":       data,
+		"pagination": pag.Validate(),
 	})
 	c.Abort()
 }
@@ -142,7 +153,7 @@ func LogReqToDb(c *gin.Context, db *gorm.DB, reqId uuid.UUID, reqStart time.Time
 	accessTokenId, isAuthenticated := c.Get("token_id_uuid")
 	billingDisable := c.GetBool("BillingDisable")
 	hostname, _ := os.Hostname()
-	
+
 	accessLog := &models.AccessLog{
 		ID:             reqId,
 		RequestID:      reqId,

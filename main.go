@@ -2,14 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/controllers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/autoroutes"
 	"github.com/joho/godotenv"
-	"log"
 )
 
 func init() {
@@ -27,6 +29,12 @@ func main() {
 	PORT := utils.GetEnv("PORT", "8080")
 
 	router := gin.Default()
+
+	router.GET("/health", handlers.HealthHandler)
+	// TODO: Pending
+	// router.GET("/readiness", handlers.HealthHandler)
+	router.GET("/", handlers.ExternalRedirect(REPO_URL))
+
 	api := router.Group("/api", controllers.LoggerMW())
 	{
 		api.POST("/registration/user", controllers.NewUser)
@@ -36,19 +44,25 @@ func main() {
 		api.POST("/register/passkey", controllers.RegistereNewPasskey)
 		api.GET("/verify/passkey/:id", controllers.VerifyPasskey)
 		api.GET("/verify/user/:id", controllers.VerifyUser)
-		// TODO: auth routes - register new key, business logic
 
-		protectedRoutes := api.Group("/protected", controllers.AuthMW())
+		// INFO: Experimantal
+		adminRouter := api.Group("/admin/auto", controllers.ConfigMW(models.Args{"BillingDisable": true}))
+		{
+			routes := []autoroutes.Route{
+				autoroutes.NewRoute(&[]models.User{}, "id", "name", "email"),
+				autoroutes.NewRoute(&[]models.Passkey{}, "id", "user_id", "desciption", "public_key"),
+				autoroutes.NewRoute(&[]models.Challenge{}, "id", "passkey_id", "user_id"),
+				autoroutes.NewRoute(&[]models.AccessToken{}, "id", "passkey_id", "user_id", "challenge_id", "token"),
+				autoroutes.NewRoute(&[]models.AccessLog{}, "id", "bill_id", "token_id"),
+			}
+			autoroutes.GenerateRoutes(adminRouter, routes)
+		}
+		protectedRouter := api.Group("/protected", controllers.AuthMW())
 		{
 			// INFO: USE OF ConfigMW(models.Args{"BillingDisable": false})
-			protectedRoutes.GET("/get-me", controllers.ConfigMW(models.Args{"BillingDisable": false}), controllers.GetMe)
+			protectedRouter.GET("/get-me", controllers.ConfigMW(models.Args{"BillingDisable": false}), controllers.GetMe)
 		}
 	}
-
-	router.GET("/health", handlers.HealthHandler)
-	// TODO: Pending
-	// router.GET("/readiness", handlers.HealthHandler)
-	router.GET("/", handlers.ExternalRedirect(REPO_URL))
 
 	router.Run(fmt.Sprintf(":%s", PORT))
 }

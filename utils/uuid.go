@@ -19,3 +19,8 @@ func NewUUIDStr() string {
 func UUIDToStr(id uuid.UUID) string {
 	return id.String()
 }
+
+func IsUUIDValid(u string) bool {
+	_, err := uuid.Parse(u)
+	return err == nil
+}

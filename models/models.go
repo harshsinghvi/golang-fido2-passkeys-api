@@ -72,5 +72,3 @@ type AccessLog struct {
 	ResponseSize   int
 	ServerHostname string
 }
-
-type Args map[string]interface{}
