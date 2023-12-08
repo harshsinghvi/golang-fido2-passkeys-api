@@ -32,7 +32,7 @@ func AuthMW() gin.HandlerFunc {
 		}
 
 		c.Set("token", accessToken.Token)
-		c.Set("token_id", accessToken.ID)
+		c.Set("token_id_uuid", accessToken.ID)
 		c.Set("user_id", accessToken.UserID.String())
 		c.Set("user_id_uuid", accessToken.UserID)
 		c.Next()

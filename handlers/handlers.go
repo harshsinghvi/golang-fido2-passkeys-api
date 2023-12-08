@@ -139,7 +139,7 @@ func GetById(c *gin.Context, db *gorm.DB, value interface{}, id string) bool {
 }
 
 func LogReqToDb(c *gin.Context, db *gorm.DB, reqId uuid.UUID, reqStart time.Time) {
-	accessTokenId, isAuthenticated := c.Get("token_id")
+	accessTokenId, isAuthenticated := c.Get("token_id_uuid")
 	billingDisable := c.GetBool("BillingDisable")
 	hostname, _ := os.Hostname()
 	

@@ -42,6 +42,11 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
+	if ok := utils.IsEmailValid(user.Email); !ok {
+		handlers.BadRequest(c, "Invalid Email Address Please use valid Email.")
+		return
+	}
+
 	// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
 	// if ok := crypto.ValidatePublicAndPrivateKeys(body["PrivateKey"].(string), body["PublicKey"].(string)); !ok {
 	// 	handlers.BadRequest(c, "Invalid Public / Private Keys")

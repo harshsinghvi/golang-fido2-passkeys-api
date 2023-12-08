@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-// TODO: Email validation,
 // TODO: Check for default values for bools
 
 type User struct {
