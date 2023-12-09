@@ -6,13 +6,14 @@ import (
 )
 
 func ParseArgs(args []models.Args, key string, defaultValue interface{}) interface{} {
-	if args == nil {
+	if len(args) == 0 {
 		return defaultValue
 	}
 
 	if val, ok := args[0][key]; ok {
 		return val
 	}
+
 	return defaultValue
 }
 

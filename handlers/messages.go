@@ -11,5 +11,6 @@ const (
 	MessageInvalidVerificationCode    = "Verification Code Invalid."
 	MessageExpiredVerificationCode    = "Verification Code Expired."
 	MessageErrorWhileSendingEmail     = "Error while sending Email."
+	MessageInvalidBody                = "Invalid Body"
 	MessageError                      = "Message"
 )

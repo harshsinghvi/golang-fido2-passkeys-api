@@ -20,8 +20,8 @@ func NewUser(c *gin.Context) {
 
 	// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
 	// var passkeyPrivateKey models.PasskeyPrivateKey
-	// body := handlers.ParseBody(c, []string{"Email", "Name", "PrivateKey", "PublicKey"})
-	body := handlers.ParseBody(c, []string{"Email", "Name", "PublicKey"})
+	// body := handlers.ParseBodyStrict(c, "Email", "Name", "PrivateKey", "PublicKey")
+	body := handlers.ParseBodyStrict(c, "Email", "Name", "PublicKey")
 	if body == nil {
 		return
 	}
@@ -30,12 +30,6 @@ func NewUser(c *gin.Context) {
 	user.Email = body["Email"].(string)
 	user.Verified = false
 	user.Roles = pq.StringArray{roles.User}
-
-	// TODO: Remove this latter
-	// if ok := utils.BindBody(body, &user); !ok {
-	// 	handlers.BadRequest(c, "Invalid body")
-	// 	return
-	// }
 
 	if ok := utils.IsEmailValid(user.Email); !ok {
 		handlers.BadRequest(c, "Invalid Email Address Please use valid Email.")
@@ -116,7 +110,7 @@ func VerifyChallenge(c *gin.Context) {
 	var challenge models.Challenge
 	var passkey models.Passkey
 
-	body := handlers.ParseBody(c, []string{"ChallengeID", "ChallengeSignature"})
+	body := handlers.ParseBodyStrict(c, "ChallengeID", "ChallengeSignature")
 	if body == nil {
 		return
 	}
@@ -235,7 +229,7 @@ func RegistereNewPasskey(c *gin.Context) {
 	var passkey models.Passkey
 	var verification models.Verification
 
-	body := handlers.ParseBody(c, []string{"Email", "PublicKey", "Desciption"})
+	body := handlers.ParseBodyStrict(c, "Email", "PublicKey", "Desciption")
 
 	if body == nil {
 		return

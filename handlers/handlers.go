@@ -60,29 +60,44 @@ func UnauthorisedRequest(c *gin.Context) {
 	c.Abort()
 }
 
-func ParseBody(c *gin.Context, keys []string) map[string]interface{} {
+func ParseBody(c *gin.Context, strict bool, keys []string) map[string]interface{} {
+	data := map[string]interface{}{}
 	body := map[string]interface{}{}
-	if err := c.Bind(&body); err != nil {
+
+	if err := c.Bind(&data); err != nil {
 		log.Printf("Error Binding request body: %s", err.Error())
-		BadRequest(c, "Invalid body")
+		BadRequest(c, MessageInvalidBody)
 		return nil
 	}
 
 	for _, key := range keys {
-		if _, ok := body[key]; !ok {
-			BadRequest(c, fmt.Sprintf("No %s found in request body.", strings.Join([]string(keys), " or ")))
-			return nil
+		val, ok := data[key]
+		if !ok {
+			if strict {
+				BadRequest(c, fmt.Sprintf("No %s found in request body.", strings.Join([]string(keys), " or ")))
+				return nil
+			}
+		} else {
+			body[key] = val
 		}
 	}
 
 	return body
 }
 
+func ParseBodyStrict(c *gin.Context, keys ...string) map[string]interface{} {
+	return ParseBody(c, true, keys)
+}
+
+func ParseBodyNonStrict(c *gin.Context, keys ...string) map[string]interface{} {
+	return ParseBody(c, false, keys)
+}
+
 func CreateInDatabase(c *gin.Context, db *gorm.DB, value interface{}, args ...models.Args) bool {
 	if res := db.Create(value); res.RowsAffected == 0 || res.Error != nil {
 		switch code, _ := utils.PgErrorCodeAndMessage(res.Error); code {
 		case pgerrcode.UniqueViolation:
-			message := utils.ParseArgs(args, "DuplicateMessage", "Duplicate Fields").(string)
+			message := utils.ParseArgs(args, "DuplicateMessage", "Duplicate Fields.").(string)
 			BadRequest(c, message)
 		default:
 			log.Printf("Error While Creating in database: %s", res.Error)

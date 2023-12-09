@@ -40,7 +40,7 @@ func AuthMW(requiredRoles ...string) gin.HandlerFunc {
 			return
 		}
 
-		if ok := roles.CheckRoles(requiredRoles, user.Roles); !ok {
+		if ok := roles.CheckRoles(requiredRoles, user.Roles); !ok || !user.Verified {
 			handlers.UnauthorisedRequest(c)
 		}
 

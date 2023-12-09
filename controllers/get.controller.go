@@ -15,7 +15,9 @@ import (
 // TODO: select fields and remove fields
 func GetController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
 	_Limit := utils.ParseArgs(args, "Limit", pagination.DEFAULT_LIMIT).(int)
-	_Message := utils.ParseArgs(args, "Message", "Data Entity").(string)
+	defaultMessageValue := fmt.Sprintf("GET %s", utils.GetStructName(_DataEntity))
+	_Message := utils.ParseArgs(args, "Message", defaultMessageValue).(string)
+	// TODO: .Omit("Role")
 	_SelectFields := utils.ParseArgs(args, "SelectFields", []string{}).([]string)
 	_SearchFields := utils.ParseArgs(args, "SearchFields", []string{}).([]string)
 	_SelfResource := utils.ParseArgs(args, "SelfResource", false).(bool)

@@ -32,3 +32,7 @@ func SendMail(verification models.Verification) bool {
 	// Email Body template
 	return true
 }
+
+func GenFuncGenerateCode(args ...interface{}) interface{} {
+	return GenerateCode()
+}
