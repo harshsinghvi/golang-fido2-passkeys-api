@@ -153,6 +153,7 @@ func GetById(db *gorm.DB, value interface{}, id string) bool {
 func LogReqToDb(c *gin.Context, db *gorm.DB, reqId uuid.UUID, reqStart time.Time) {
 	accessTokenId, isAuthenticated := c.Get("token_id_uuid")
 	billingDisable := c.GetBool("BillingDisable")
+	userId, _ := c.Get("user_id_uuid")
 	hostname, _ := os.Hostname()
 
 	accessLog := &models.AccessLog{
@@ -170,6 +171,7 @@ func LogReqToDb(c *gin.Context, db *gorm.DB, reqId uuid.UUID, reqStart time.Time
 
 	if isAuthenticated {
 		accessLog.TokenID = accessTokenId.(uuid.UUID)
+		accessLog.UserID = userId.(uuid.UUID)
 	}
 
 	if ok := CreateInDatabase(c, db, accessLog); !ok {
@@ -193,15 +195,15 @@ func CheckForSelfResource(c *gin.Context, value interface{}) bool {
 
 	switch entity := value.(type) {
 	case models.User:
-		return userId == entity.ID.String()
+		return userId.(string) == entity.ID.String()
 	case models.Passkey:
-		return userId == entity.UserID.String()
+		return userId.(string) == entity.UserID.String()
 	case models.Challenge:
-		return userId == entity.UserID.String()
+		return userId.(string) == entity.UserID.String()
 	case models.AccessToken:
-		return userId == entity.UserID.String()
+		return userId.(string) == entity.UserID.String()
 	case models.Verification:
-		return userId == entity.UserID.String()
+		return userId.(string) == entity.UserID.String()
 	default:
 		UnauthorisedRequest(c)
 		return false

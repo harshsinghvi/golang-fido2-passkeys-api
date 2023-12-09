@@ -103,7 +103,6 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
-
 	data["User"] = models.User{
 		Name:  user.Name,
 		Email: user.Email,
@@ -159,6 +158,7 @@ func VerifyChallenge(c *gin.Context) {
 	accessToken.Token = utils.GenerateToken(challenge.ID.String())
 	accessToken.Disabled = !passkey.Verified // passkey.Verified == false // Token must be disabled when the passkey is not verified
 	accessToken.Expiry = time.Now().AddDate(0, 0, 10)
+	accessToken.Desciption = "Generated from Passkey"
 
 	if accessToken.Token == "" {
 		handlers.InternalServerError(c)

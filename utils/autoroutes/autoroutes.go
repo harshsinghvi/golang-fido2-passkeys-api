@@ -77,7 +77,6 @@ func GenerateRoutes(router *gin.RouterGroup, routes []Route) {
 
 		router.GET(endpointPath, controllers.GetController(route.DataEntity, args))
 		info[endpointPath] = dEName
-
 	}
 
 	router.GET("/info", func(c *gin.Context) {

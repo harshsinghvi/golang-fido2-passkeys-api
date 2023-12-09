@@ -58,6 +58,7 @@ you can import or export keys in this folder
 - token user
 - orgs
 - user profile
+- nil check arrays in whole code
 - ~~email validation~~
 - ~~demo business logic (todo app)~~
 - ~~demo business logic cli~~

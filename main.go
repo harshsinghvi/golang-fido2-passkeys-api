@@ -60,7 +60,7 @@ func main() {
 					autoroutes.NewRoute(&[]models.Passkey{}, "id", "user_id", "desciption", "public_key"),
 					autoroutes.NewRoute(&[]models.Challenge{}, "id", "passkey_id", "user_id"),
 					autoroutes.NewRoute(&[]models.AccessToken{}, "id", "passkey_id", "user_id", "challenge_id", "token"),
-					autoroutes.NewRoute(&[]models.AccessLog{}, "id", "bill_id", "token_id"),
+					autoroutes.NewRoute(&[]models.AccessLog{}, "id", "bill_id", "token_id", "user_id"),
 					autoroutes.NewRoute(&[]models.Verification{}, "id", "user_id", "passkey_id", "token_id", "code", "status"),
 				}
 				autoroutes.GenerateRoutes(autoGenRouter, routes)
@@ -70,6 +70,29 @@ func main() {
 		{
 			// INFO: USE OF ConfigMW(models.Args{"BillingDisable": false})
 			protectedRouter.GET("/get-me", controllers.ConfigMW(models.Args{"BillingDisable": false}), controllers.GetMe)
+			protectedRouter.GET("/passkey", controllers.GetController(&[]models.Passkey{}, models.Args{
+				"SelfResource": true,
+				"SearchFields": []string{"id", "user_id", "desciption", "public_key"},
+				"Message":      autoroutes.GetStructName(&[]models.Passkey{}),
+			}))
+			protectedRouter.GET("/user", controllers.GetController(&[]models.User{}, models.Args{
+				"SelfResource":      true,
+				"SelfResourceField": "id",
+				"Message":           autoroutes.GetStructName(&[]models.User{}),
+			}))
+
+			protectedRouter.GET("/access-token", controllers.GetController(&[]models.AccessToken{}, models.Args{
+				"SelfResource": true,
+				"Message":      autoroutes.GetStructName(&[]models.AccessToken{}),
+				"SearchFields": []string{"id", "passkey_id", "passkey_id", "challenge_id", "token"},
+				"SelectFields": []string{"id", "passkey_id", "disabled", "expiry", "created_at", "updated_at"},
+			}))
+
+			protectedRouter.GET("/access-log", controllers.GetController(&[]models.AccessLog{}, models.Args{
+				"SelfResource": true,
+				"Message":      autoroutes.GetStructName(&[]models.AccessLog{}),
+				"SearchFields": []string{"id", "bill_id", "token_id", "user_id"},
+			}))
 		}
 	}
 

@@ -66,11 +66,13 @@ type AccessToken struct {
 	Token       string    `gorm:"index:idx_access_token"`
 	Disabled    bool      `gorm:"index:idx_access_token"`
 	Expiry      time.Time `gorm:"index:idx_access_token"`
+	Desciption  string
 }
 
 type AccessLog struct {
 	gorm.Model
 	ID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	UserID         uuid.UUID `gorm:"index:idx_access_logs"`
 	TokenID        uuid.UUID `gorm:"index:idx_access_logs"`
 	RequestID      uuid.UUID `gorm:"index:idx_access_logs"`
 	Path           string    `gorm:"index:idx_access_logs"`
