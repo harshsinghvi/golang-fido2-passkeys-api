@@ -50,18 +50,22 @@ you can import or export keys in this folder
 
 ## TODO
 
-- Workflow for releasing binaries
-- verification expiry and updated verification process
-- public key validation
-- delete or disabled endpoint
-- token roles
-- token user
 - orgs
-- user profile
 - nil check arrays in whole code
+- send email
+
+- Workflow for releasing binaries
+- public key validation
+- token roles
+- ~~delete or disabled endpoint~~
+- ~~verification expiry and updated verification process~~
+- ~~user roles~~
+- ~~user profile~~
 - ~~email validation~~
 - ~~demo business logic (todo app)~~
 - ~~demo business logic cli~~
 - ~~email verification after user creation~~
 - ~~new passkey registration (followed by authorisation using email verification)~~
 - ~~audit logs~~
+- admin portal
+- org login
