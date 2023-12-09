@@ -35,6 +35,8 @@ func ConnectDb() {
 	DB.AutoMigrate(&models.Challenge{})
 	DB.AutoMigrate(&models.AccessToken{})
 	DB.AutoMigrate(&models.AccessLog{})
+	DB.AutoMigrate(&models.Verification{})
+
 	// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
 	// DB.AutoMigrate(&models.PasskeyPrivateKey{})
 

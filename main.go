@@ -43,20 +43,28 @@ func main() {
 		api.GET("/login/request-challenge/:passkey", controllers.RequestChallenge)
 		api.GET("/login/request-challenge", controllers.RequestChallengeUsingPublicKey)
 		api.POST("/register/passkey", controllers.RegistereNewPasskey)
-		api.GET("/verify/passkey/:id", controllers.VerifyPasskey)
-		api.GET("/verify/user/:id", controllers.VerifyUser)
+		api.GET("/verify/:id", controllers.Verificaion)
+		api.GET("/re-verify/u/:email", controllers.ReVerifyUser)
+		api.GET("/re-verify/p", controllers.ReVerifyPasskey)
 
 		// INFO: Experimantal
-		adminRouter := api.Group("/admin/auto", controllers.ConfigMW(models.Args{"BillingDisable": true}), controllers.AuthMW(roles.SuperAdmin))
+		adminRouter := api.Group("/admin", controllers.ConfigMW(models.Args{"BillingDisable": true}), controllers.AuthMW(roles.SuperAdmin))
 		{
-			routes := []autoroutes.Route{
-				autoroutes.NewRoute(&[]models.User{}, "id", "name", "email"),
-				autoroutes.NewRoute(&[]models.Passkey{}, "id", "user_id", "desciption", "public_key"),
-				autoroutes.NewRoute(&[]models.Challenge{}, "id", "passkey_id", "user_id"),
-				autoroutes.NewRoute(&[]models.AccessToken{}, "id", "passkey_id", "user_id", "challenge_id", "token"),
-				autoroutes.NewRoute(&[]models.AccessLog{}, "id", "bill_id", "token_id"),
+			adminRouter.GET("/verify/passkey/:id", controllers.VerifyPasskey)
+			adminRouter.GET("/verify/user/:id", controllers.VerifyUser)
+
+			autoGenRouter := adminRouter.Group("/auto")
+			{
+				routes := []autoroutes.Route{
+					autoroutes.NewRoute(&[]models.User{}, "id", "name", "email"),
+					autoroutes.NewRoute(&[]models.Passkey{}, "id", "user_id", "desciption", "public_key"),
+					autoroutes.NewRoute(&[]models.Challenge{}, "id", "passkey_id", "user_id"),
+					autoroutes.NewRoute(&[]models.AccessToken{}, "id", "passkey_id", "user_id", "challenge_id", "token"),
+					autoroutes.NewRoute(&[]models.AccessLog{}, "id", "bill_id", "token_id"),
+					autoroutes.NewRoute(&[]models.Verification{}, "id", "user_id", "passkey_id", "token_id", "code", "status"),
+				}
+				autoroutes.GenerateRoutes(autoGenRouter, routes)
 			}
-			autoroutes.GenerateRoutes(adminRouter, routes)
 		}
 		protectedRouter := api.Group("/protected", controllers.AuthMW())
 		{

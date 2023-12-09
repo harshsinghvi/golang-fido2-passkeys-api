@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/pagination"
 	"github.com/jackc/pgerrcode"
@@ -92,26 +93,26 @@ func CreateInDatabase(c *gin.Context, db *gorm.DB, value interface{}, args ...mo
 	return true
 }
 
-func CreateChallenge(c *gin.Context, db *gorm.DB, data map[string]interface{}, passkey models.Passkey, args ...models.Args) bool {
+func CreateChallenge(c *gin.Context, db *gorm.DB, data map[string]interface{}, passkey models.Passkey, args ...models.Args) (bool, models.Challenge) {
 	challengeString, challenge, err := utils.CreateChallenge(passkey.PublicKey)
 	challenge.UserID = passkey.UserID
 	challenge.PasskeyID = passkey.ID
-	challenge.Status = "PENDING"
+	challenge.Status = models.StatusPending
 	challenge.Expiry = time.Now().AddDate(0, 0, 10)
 
 	if err != nil {
 		InternalServerError(c)
-		return false
+		return false, models.Challenge{}
 	}
 	if ok := CreateInDatabase(c, db, &challenge, args...); !ok {
-		return false
+		return false, models.Challenge{}
 	}
 
 	data["ChallengeString"] = challengeString
 	data["ChallengeID"] = challenge.ID
 	data["ChallengeExpiry"] = challenge.Expiry
 
-	return true
+	return true, challenge
 }
 
 func HealthHandler(c *gin.Context) {
@@ -136,7 +137,7 @@ func MarkVerified(c *gin.Context, db *gorm.DB, value interface{}, idField string
 func TxCommit(c *gin.Context, tx *gorm.DB) bool {
 	if res := tx.Commit(); res.Error != nil {
 		log.Println("Error Comiting Txn, ", res.Error)
-		BadRequest(c, "Bad Request")
+		BadRequest(c, MessageBadRequest)
 		return false
 	}
 	return true
@@ -173,5 +174,36 @@ func LogReqToDb(c *gin.Context, db *gorm.DB, reqId uuid.UUID, reqStart time.Time
 
 	if ok := CreateInDatabase(c, db, accessLog); !ok {
 		log.Println("Error in recording log in db")
+	}
+}
+
+// TODO Test and usage pending
+func CheckForSelfResource(c *gin.Context, value interface{}) bool {
+	userId, oKa := c.Get("user_id")
+	userRoles, oKb := c.Get("user_roles")
+
+	if !oKa || !oKb {
+		UnauthorisedRequest(c)
+		return false
+	}
+
+	if ok := roles.CheckRoles([]string{roles.Admin, roles.SuperAdmin}, userRoles.([]string)); ok {
+		return true
+	}
+
+	switch entity := value.(type) {
+	case models.User:
+		return userId == entity.ID.String()
+	case models.Passkey:
+		return userId == entity.UserID.String()
+	case models.Challenge:
+		return userId == entity.UserID.String()
+	case models.AccessToken:
+		return userId == entity.UserID.String()
+	case models.Verification:
+		return userId == entity.UserID.String()
+	default:
+		UnauthorisedRequest(c)
+		return false
 	}
 }

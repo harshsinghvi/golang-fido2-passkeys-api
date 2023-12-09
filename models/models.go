@@ -10,13 +10,21 @@ import (
 
 // TODO: Check for default values for bools
 
+const (
+	StatusFailed  = "FAILED"
+	StatusSuccess = "SUCCESS"
+	StatusPending = "PENDING"
+)
+
+var NilUUID = uuid.Nil
+
 type User struct {
 	gorm.Model
 	ID       uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
 	Email    string         `gorm:"index:idx_email,unique"`
 	Roles    pq.StringArray `gorm:"type:text[]"`
 	Name     string
-	Verified bool // TODO Update code to check for verified passkeys
+	Verified bool // TODO Update code to check for verified users
 }
 
 type Passkey struct {
@@ -74,4 +82,17 @@ type AccessLog struct {
 	ResponseTime   int64
 	ResponseSize   int
 	ServerHostname string
+}
+
+type Verification struct {
+	gorm.Model
+	ID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	Email       string
+	UserID      uuid.UUID
+	PasskeyID   uuid.UUID
+	TokenID     uuid.UUID
+	ChallengeID uuid.UUID
+	Expiry      time.Time
+	Status      string // 'FAILED','SUCCESS','PENDING'
+	Code        string
 }

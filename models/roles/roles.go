@@ -6,6 +6,7 @@ const (
 	Any        = "any"
 	User       = "user"
 	Admin      = "admin"
+	Self       = "self"
 )
 
 func CheckRoles(requiredRoles []string, grantedRoles []string) bool {

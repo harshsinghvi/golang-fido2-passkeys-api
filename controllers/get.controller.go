@@ -43,14 +43,14 @@ func GetController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc
 		}
 		res := querry.Count(&pag.TotalRecords)
 		if res.Error != nil {
-			handlers.BadRequest(c, "Bad Request")
+			handlers.BadRequest(c, handlers.MessageBadRequest)
 			return
 		}
 		pag.Validate()
 		querry = querry.Order("created_at DESC").Limit(pag.Limit).Offset(pag.Offset)
 		res = querry.Find(_DataEntity)
 		if res.Error != nil {
-			handlers.BadRequest(c, "Bad Request")
+			handlers.BadRequest(c, handlers.MessageBadRequest)
 			return
 		}
 

@@ -36,7 +36,7 @@ func AuthMW(requiredRoles ...string) gin.HandlerFunc {
 		}
 
 		if ok := handlers.GetById(database.DB, &user, accessToken.UserID.String()); !ok {
-			handlers.BadRequest(c, "Bad Request")
+			handlers.BadRequest(c, handlers.MessageBadRequest)
 			return
 		}
 
@@ -46,8 +46,11 @@ func AuthMW(requiredRoles ...string) gin.HandlerFunc {
 
 		c.Set("token", accessToken.Token)
 		c.Set("token_id_uuid", accessToken.ID)
-		c.Set("user_id", accessToken.UserID.String())
-		c.Set("user_id_uuid", accessToken.UserID)
+
+		// TODO: remove this key latter
+		c.Set("user_id", user.ID.String())
+		c.Set("user_id_uuid", user.ID)
+		c.Set("user_roles", user.Roles)
 
 		c.Next()
 	}
