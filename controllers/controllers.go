@@ -193,7 +193,7 @@ func RequestChallenge(c *gin.Context) {
 	var passkey models.Passkey
 	data := map[string]interface{}{}
 
-	if res := querry.Find(&passkey); res.RowsAffected == 0 {
+	if res := querry.Find(&passkey); res.RowsAffected == 0 || res.Error != nil {
 		handlers.BadRequest(c, "Invalid passkey")
 		return
 	}
