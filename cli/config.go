@@ -21,8 +21,8 @@ var (
 )
 
 const (
-	LOCAL_HOST = "http://localhost:8080"
-	// PROD_URL       = "https://fido2-passkey.onrender.com"
-	PROD_HOST       = "https://passkey.harshsinghvi.com"
-	DEFAULT_HOST    = PROD_HOST
+	// PROD_HOST     = "https://fido2-passkey.onrender.com"
+	LOCAL_HOST   = "http://localhost:8080"
+	PROD_HOST    = "https://passkey.harshsinghvi.com"
+	DEFAULT_HOST = PROD_HOST
 )

@@ -16,8 +16,7 @@ import (
 )
 
 func init() {
-	var err error
-	if err = godotenv.Load(); err != nil {
+	if err := godotenv.Load(); err != nil {
 		log.Printf("Error loading .env file")
 	}
 	database.ConnectDb()
@@ -39,10 +38,11 @@ func main() {
 	api := router.Group("/api", controllers.LoggerMW())
 	{
 		api.POST("/registration/user", controllers.NewUser)
-		api.POST("/login/verify-challenge", controllers.VerifyChallenge)
+		api.GET("/login/request-challenge", controllers.RequestChallenge)
 		api.GET("/login/request-challenge/:passkey", controllers.RequestChallenge)
-		api.GET("/login/request-challenge", controllers.RequestChallengeUsingPublicKey)
+		api.POST("/login/verify-challenge", controllers.VerifyChallenge)
 		api.POST("/register/passkey", controllers.RegistereNewPasskey)
+
 		api.GET("/verify/:id", controllers.Verificaion)
 		api.GET("/re-verify/u/:email", controllers.ReVerifyUser)
 		api.GET("/re-verify/p", controllers.ReVerifyPasskey)

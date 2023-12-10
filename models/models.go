@@ -8,8 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// TODO: Check for default values for bools
-
 const (
 	StatusFailed  = "FAILED"
 	StatusSuccess = "SUCCESS"
@@ -36,15 +34,6 @@ type Passkey struct {
 	Verified   bool   // TODO Update code to check for verified passkeys
 }
 
-// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
-// type PasskeyPrivateKey struct {
-// 	gorm.Model
-// 	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
-// 	UserID     uuid.UUID `gorm:"index"`
-// 	PasskeyID  uuid.UUID `gorm:"index"`
-// 	PrivateKey string
-// }
-
 type Challenge struct {
 	gorm.Model
 	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
@@ -52,8 +41,8 @@ type Challenge struct {
 	UserID    uuid.UUID `gorm:"index"`
 	Operand1  int
 	Operand2  int
-	Operator  string    // `gorm:"type:enum('+','*')"`
-	Status    string    // `gorm:"type:enum('FAILED','SUCCESS','PENDING')"`
+	Operator  string    // +/*
+	Status    string    // 'FAILED','SUCCESS','PENDING'
 	Expiry    time.Time `gorm:"index"`
 }
 
@@ -99,3 +88,12 @@ type Verification struct {
 	Code           string
 	EmailMessageID string
 }
+
+// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
+// type PasskeyPrivateKey struct {
+// 	gorm.Model
+// 	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+// 	UserID     uuid.UUID `gorm:"index"`
+// 	PasskeyID  uuid.UUID `gorm:"index"`
+// 	PrivateKey string
+// }

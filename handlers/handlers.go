@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/pagination"
 	"github.com/jackc/pgerrcode"
@@ -194,37 +193,6 @@ func LogReqToDb(c *gin.Context, db *gorm.DB, reqId uuid.UUID, reqStart time.Time
 
 	if ok := CreateInDatabase(c, db, accessLog); !ok {
 		log.Println("Error in recording log in db")
-	}
-}
-
-// TODO Test and usage pending
-func CheckForSelfResource(c *gin.Context, value interface{}) bool {
-	userId, oKa := c.Get("user_id")
-	userRoles, oKb := c.Get("user_roles")
-
-	if !oKa || !oKb {
-		UnauthorisedRequest(c)
-		return false
-	}
-
-	if ok := roles.CheckRoles([]string{roles.Admin, roles.SuperAdmin}, userRoles.([]string)); ok {
-		return true
-	}
-
-	switch entity := value.(type) {
-	case models.User:
-		return userId.(string) == entity.ID.String()
-	case models.Passkey:
-		return userId.(string) == entity.UserID.String()
-	case models.Challenge:
-		return userId.(string) == entity.UserID.String()
-	case models.AccessToken:
-		return userId.(string) == entity.UserID.String()
-	case models.Verification:
-		return userId.(string) == entity.UserID.String()
-	default:
-		UnauthorisedRequest(c)
-		return false
 	}
 }
 

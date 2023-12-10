@@ -12,7 +12,6 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/pagination"
 )
 
-// TODO: select fields and remove fields
 func GetController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
 	_Limit := utils.ParseArgs(args, "Limit", pagination.DEFAULT_LIMIT).(int)
 	defaultMessageValue := fmt.Sprintf("GET %s", utils.GetStructName(_DataEntity))
