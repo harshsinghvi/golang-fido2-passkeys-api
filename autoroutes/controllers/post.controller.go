@@ -5,12 +5,12 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/jackc/pgerrcode"
-	"gorm.io/gorm/clause"
 )
 
 func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
@@ -19,9 +19,11 @@ func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFun
 	_SelfResource := utils.ParseArgs(args, "SelfResource", false).(bool)
 	_SelfResourceField := utils.ParseArgs(args, "SelfResourceField", "user_id").(string)
 	_NewFields := utils.ParseArgs(args, "NewFields", []string{}).([]string)
+	_OverrideOmit := utils.ParseArgs(args, "OverrideOmit", false).(bool)
 	_SelectFields := utils.ParseArgs(args, "SelectFields", []string{}).([]string)
 	_GenFields := utils.ParseArgs(args, "GenFields", models.GenFields{}).(models.GenFields)
 	_DuplicateMessage := utils.ParseArgs(args, "DuplicateMessage", "Duplicate Fields.").(string)
+	_OmitFields := utils.ParseArgs(args, "OmitFields", []string{}).([]string)
 
 	return func(c *gin.Context) {
 		body := map[string]interface{}{}
@@ -47,15 +49,13 @@ func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFun
 			body[_SelfResourceField] = userId
 		}
 
-		columns := []clause.Column{}
-		for _, column := range _SelectFields {
-			columns = append(columns, clause.Column{Name: column})
-		}
+		returningClause := helpers.ReturningColumnsCalculator(database.DB, _DataEntity, _SelectFields, _OmitFields, _OverrideOmit)
 
 		body["CreatedAt"] = utils.TimeNow()
 		body["UpdatedAt"] = utils.TimeNow()
 
-		if res := database.DB.Model(_DataEntity).Clauses(clause.Returning{Columns: columns}).Create(body); res.RowsAffected == 0 || res.Error != nil {
+		// .Omit(_OmitFields...) // INFO: use this if you need to omit the fields
+		if res := database.DB.Model(_DataEntity).Clauses(returningClause).Create(body); res.RowsAffected == 0 || res.Error != nil {
 			switch code, _ := utils.PgErrorCodeAndMessage(res.Error); code {
 			case pgerrcode.UniqueViolation:
 				handlers.BadRequest(c, _DuplicateMessage)
@@ -66,6 +66,7 @@ func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFun
 			return
 		}
 
+		// TODO: Returning map[string]intereface{} instead of data entitie's model which is outputs fields in small case
 		handlers.StatusOK(c, body, _Message)
 	}
 }

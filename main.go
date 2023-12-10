@@ -5,13 +5,13 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/controllers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/autoroutes"
 	"github.com/joho/godotenv"
 )
 

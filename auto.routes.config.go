@@ -3,10 +3,11 @@ package main
 import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 
+	. "github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes"
 	. "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
-	. "github.com/harshsinghvi/golang-fido2-passkeys-api/utils/autoroutes"
 )
 
+// TODO Check configs
 var adminAutoRoutes = Routes{
 	New(&[]User{}, Args{
 		"SearchFields":     []string{"id", "email", "name"},
@@ -28,7 +29,6 @@ var adminAutoRoutes = Routes{
 
 	New(&[]AccessToken{}, Args{
 		"SearchFields":    []string{"id", "user_id", "passkey_id", "challenge_id", "desciption", "token"},
-		"SelectFields":    []string{"id", "passkey_id", "disabled", "expiry", "created_at", "updated_at", "desciption"},
 		"NewFields":       []string{"UserID", "Desciption", "Expiry"},
 		"UpdatableFields": []string{"Disabled", "Expiry", "Desciption"},
 		"GenFields": GenFields{
@@ -62,6 +62,7 @@ var protectedAutoRoutes = Routes{
 
 	New(&[]Passkey{}, Args{
 		"SelfResource":     true,
+		"OmitFields":       []string{"public_key"},
 		"SearchFields":     []string{"id", "user_id", "desciption", "publicKey"},
 		"NewFields":        []string{"UserID", "Desciption", "PublicKey"},
 		"DuplicateMessage": "Public Key already in use",
@@ -70,12 +71,15 @@ var protectedAutoRoutes = Routes{
 	New(&[]AccessToken{}, Args{
 		"SelfResource":    true,
 		"SearchFields":    []string{"id", "user_id", "passkey_id", "desciption", "token"},
-		"NewFields":       []string{"UserID", "Desciption", "Expiry"},
+		"SelectFields":    []string{"id", "passkey_id", "disabled", "expiry", "created_at", "updated_at", "desciption", "token"},
+		"OmitFields":      []string{"token", "id"},
 		"UpdatableFields": []string{"Disabled", "Expiry"},
+		"NewFields":       []string{"Desciption", "Expiry"},
 		"GenFields": GenFields{
 			"Token":  utils.GenerateRandomToken,
 			"Expiry": utils.TimeNowAfterDays(10),
 		},
+		"OverrideOmit": true,
 	}, MethodGet, MethodPost, MethodDelete, MethodPut),
 
 	New(&[]AccessLog{}, Args{

@@ -16,12 +16,11 @@ func GetController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc
 	_Limit := utils.ParseArgs(args, "Limit", pagination.DEFAULT_LIMIT).(int)
 	defaultMessageValue := fmt.Sprintf("GET %s", utils.GetStructName(_DataEntity))
 	_Message := utils.ParseArgs(args, "Message", defaultMessageValue).(string)
-	// TODO: .Omit("Role")
+	_OmitFields := utils.ParseArgs(args, "OmitFields", []string{}).([]string)
 	_SelectFields := utils.ParseArgs(args, "SelectFields", []string{}).([]string)
-	_SearchFields := utils.ParseArgs(args, "SearchFields", []string{}).([]string)
 	_SelfResource := utils.ParseArgs(args, "SelfResource", false).(bool)
 	_SelfResourceField := utils.ParseArgs(args, "SelfResourceField", "user_id").(string)
-
+	_SearchFields := utils.ParseArgs(args, "SearchFields", []string{}).([]string)
 	return func(c *gin.Context) {
 		var pageStr = c.Query("page")
 		var searchStr = c.Query("search")
@@ -37,6 +36,10 @@ func GetController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc
 
 		if len(_SelectFields) != 0 {
 			querry = querry.Select(_SelectFields)
+		}
+
+		if len(_OmitFields) != 0 {
+			querry = querry.Omit(_OmitFields...)
 		}
 
 		if searchStr != "" {

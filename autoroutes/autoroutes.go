@@ -1,10 +1,14 @@
 package autoroutes
 
+// TODO Isolate all resources and modules
+// TODO get gorm db instance from config (pass db in GenerateRoutes -> each controllers)
+// Use arg config Struct to make config not
+
 import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/controllers"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/controllers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
@@ -21,19 +25,34 @@ type Route struct {
 	Methods    []string
 	DataEntity interface{}
 	Args       models.Args
+}
 
+// https://pkg.go.dev/gopkg.in/mcuadros/go-defaults.v1#section-readme
+// https://github.com/mcuadros/go-defaults
+type Config struct {
 	// Args
-	// Message           string
-	// SelfResource      bool
-	// SelfResourceField string
-	// Limit             int
-	// SelectFields      []string
-	// SearchFields      []string
-	// NewFields         []string // CamelCase
-	// GenFields         models.GenFields
-	// DuplicateMessage  string
-	// UpdatableFields   []string // CamelCase
+	// TODO: rename all arg keys with MethodName Prefix
+	// GET PUT POST DELETE
+	Message           string
+	SelfResource      bool
+	SelfResourceField string
 
+	// GET PUT POST
+	SelectFields []string
+	OmitFields   []string
+
+	// GET
+	Limit        int
+	SearchFields []string
+
+	// PUT
+	UpdatableFields []string // CamelCase
+
+	// POST
+	DuplicateMessage string
+	OverrideOmit     bool
+	NewFields        []string         // CamelCase
+	GenFields        models.GenFields // TODO: Isolate this too
 }
 
 type Routes []Route
