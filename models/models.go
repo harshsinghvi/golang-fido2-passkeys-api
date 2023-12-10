@@ -88,13 +88,14 @@ type AccessLog struct {
 
 type Verification struct {
 	gorm.Model
-	ID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
-	Email       string
-	UserID      uuid.UUID
-	PasskeyID   uuid.UUID
-	TokenID     uuid.UUID
-	ChallengeID uuid.UUID
-	Expiry      time.Time
-	Status      string // 'FAILED','SUCCESS','PENDING'
-	Code        string
+	ID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	Email          string
+	UserID         uuid.UUID
+	PasskeyID      uuid.UUID
+	TokenID        uuid.UUID
+	ChallengeID    uuid.UUID
+	Expiry         time.Time
+	Status         string // 'FAILED','SUCCESS','PENDING'
+	Code           string
+	EmailMessageID string
 }

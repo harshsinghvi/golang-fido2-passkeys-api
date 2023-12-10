@@ -42,7 +42,7 @@ var adminAutoRoutes = Routes{
 	}, MethodGet),
 
 	New(&[]Verification{}, Args{
-		"SearchFields":    []string{"id", "user_id", "passkey_id", "challenge_id", "token_id", "code", "email", "status"},
+		"SearchFields":    []string{"id", "user_id", "passkey_id", "challenge_id", "token_id", "code", "email", "status", "email_message_id"},
 		"UpdatableFields": []string{"Status", "Code", "Expiry"},
 		"NewFields":       []string{"UserID", "Expiry", "Email"},
 		"GenFields": GenFields{

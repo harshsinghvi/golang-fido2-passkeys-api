@@ -87,13 +87,13 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
-	if ok := handlers.TxCommit(c, tx); !ok {
+	if ok := handlers.SendVerificationMail(tx, verification); !ok {
+		tx.Rollback()
+		handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
 		return
 	}
 
-	// TODO: Send mail here
-	if ok := utils.SendMail(verification); !ok {
-		handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
+	if ok := handlers.TxCommit(c, tx); !ok {
 		return
 	}
 
@@ -138,7 +138,6 @@ func VerifyChallenge(c *gin.Context) {
 
 	if ok := utils.VerifySignature(passkey.PublicKey, body["ChallengeSignature"].(string), message); !ok {
 		// Update Database
-
 		challenge.Status = models.StatusFailed
 		database.DB.Save(&challenge)
 		handlers.BadRequest(c, "Challenge Verified Failed")
@@ -272,16 +271,15 @@ func RegistereNewPasskey(c *gin.Context) {
 		return
 	}
 
-	if ok := handlers.TxCommit(c, tx); !ok {
-		return
-	}
-
-	// TODO: Send mail here
-	if ok := utils.SendMail(verification); !ok {
+	if ok := handlers.SendVerificationMail(tx, verification); !ok {
+		tx.Rollback()
 		handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
 		return
 	}
-	// TODO: Passkey Verification or authorization logic here
+
+	if ok := handlers.TxCommit(c, tx); !ok {
+		return
+	}
 
 	handlers.StatusOK(c, data, "Passkey Added. Proceed to verification. check your email for verification code or verification link.")
 }
@@ -473,15 +471,23 @@ func ReVerifyUser(c *gin.Context) {
 	verification.Code = utils.GenerateCode()
 	verification.Email = user.Email
 
+	tx := database.DB.Begin()
+
 	if ok := handlers.CreateInDatabase(c, database.DB, &verification); !ok {
+		tx.Rollback()
 		return
 	}
 
-	// TODO: Send mail here
-	if ok := utils.SendMail(verification); !ok {
+	if ok := handlers.SendVerificationMail(tx, verification); !ok {
+		tx.Rollback()
 		handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
 		return
 	}
+
+	if ok := handlers.TxCommit(c, tx); !ok {
+		return
+	}
+
 	handlers.StatusOK(c, nil, "User Verification Email Sent.")
 }
 
@@ -517,13 +523,20 @@ func ReVerifyPasskey(c *gin.Context) {
 	verification.Code = utils.GenerateCode()
 	verification.Email = user.Email
 
+	tx := database.DB.Begin()
+
 	if ok := handlers.CreateInDatabase(c, database.DB, &verification); !ok {
+		tx.Rollback()
 		return
 	}
 
-	// TODO: Send mail here
-	if ok := utils.SendMail(verification); !ok {
+	if ok := handlers.SendVerificationMail(tx, verification); !ok {
+		tx.Rollback()
 		handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
+		return
+	}
+
+	if ok := handlers.TxCommit(c, tx); !ok {
 		return
 	}
 

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -10,8 +11,10 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/pagination"
 	"github.com/jackc/pgerrcode"
 	"gorm.io/gorm"
+	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -223,4 +226,98 @@ func CheckForSelfResource(c *gin.Context, value interface{}) bool {
 		UnauthorisedRequest(c)
 		return false
 	}
+}
+
+func SendVerificationMail(db *gorm.DB, verification models.Verification) bool {
+	var data map[string]interface{}
+
+	var API_KEY = utils.GetEnv("ELASTIC_EMAIL_API_KEY", "")
+	var FROM_EMAIL = utils.GetEnv("ELASTIC_FORM_EMAIL", "noreply@harshsinghvi.com")
+	var FROM_NAME = utils.GetEnv("ELASTIC_FORM_NAME", "FIDO 2 Passkey de")
+	var BACKEND_URL = utils.GetEnv("BACKEND_URL", "https://passkey.harshsinghvi.com")
+
+	log.Println("API KEY =====> ", API_KEY)
+	log.Println("API KEY =====> ", BACKEND_URL)
+	log.Println("API KEY =====> ", FROM_NAME)
+	log.Println("API KEY =====> ", FROM_EMAIL)
+
+	log.Println(verification)
+
+	if API_KEY == "" {
+		log.Println("Elastic Email Api Key not found pelase check env")
+		return false
+	}
+
+	verificationUrl, err := url.Parse(BACKEND_URL)
+	if err != nil {
+		return false
+	}
+	verificationUrl.Path = fmt.Sprintf("/api/verify/%s", verification.ID)
+	verificationUrl.RawQuery = fmt.Sprintf("code=%s", verification.Code)
+
+	var bodyHtmlTemplate string = "<h2> Your User Verification URL :  </h2> <a href=\"%s\">%s</a>"
+	var emailSubject string = "[Alert] New Passkey request"
+
+	if verification.UserID != models.NilUUID {
+		bodyHtmlTemplate = "<h2> Your Passkey Authorisation URL :  </h2> <a href=\"%s\">%s</a> <br> please do not authorize this request if yout have not added this."
+		emailSubject = "User Verification FIDO 2"
+	}
+	bodyHtml := fmt.Sprintf(bodyHtmlTemplate, verificationUrl.String(), verificationUrl.String())
+	url, err := url.Parse("https://api.elasticemail.com/v2/email/send")
+	if err != nil {
+		return false
+	}
+
+	querry := url.Query()
+	querry.Set("apikey", API_KEY)
+	querry.Set("subject", emailSubject)
+	querry.Set("from", FROM_EMAIL)
+	querry.Set("fromName", FROM_NAME)
+	querry.Set("sender", FROM_NAME)
+	querry.Set("senderName", FROM_EMAIL)
+	querry.Set("to", verification.Email)
+	querry.Set("bodyHtml", bodyHtml)
+	// querry.Set("bodyText", "your verification code: 0000")
+	querry.Set("isTransactional", "true")
+	querry.Set("trackOpens", "true")
+	querry.Set("trackClicks", "true")
+	url.RawQuery = querry.Encode()
+
+	resp, err := http.Get(url.String())
+
+	if err != nil {
+		return false
+	}
+
+	defer resp.Body.Close()
+
+	resBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false
+	}
+
+	log.Printf("resBody ===> %s", resBody)
+
+	err = json.Unmarshal(resBody, &data)
+
+	if err != nil {
+		return false
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return false
+	}
+
+	if success, ok := data["success"]; !ok || success == false {
+		return false
+	}
+
+	verification.EmailMessageID = fmt.Sprint(data["data"].(map[string]interface{})["messageid"])
+
+	if res := db.Save(verification); res.RowsAffected == 0 || res.Error != nil {
+		log.Println("Error Saving EmailMessageID, Error, ", res.Error)
+		return false
+	}
+
+	return true
 }
