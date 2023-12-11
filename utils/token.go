@@ -19,6 +19,3 @@ func GenerateToken(str string) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func GenerateRandomToken(args ...interface{}) interface{} {
-	return GenerateToken(NewUUIDStr())
-}

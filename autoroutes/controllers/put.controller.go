@@ -5,23 +5,25 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
+
+	// WIP: TO remove
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 )
 
 func PutController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
-	defaultMessageValue := fmt.Sprintf("PUT %s", utils.GetStructName(_DataEntity))
-	_Message := utils.ParseArgs(args, "Message", defaultMessageValue).(string)
-	_SelfResource := utils.ParseArgs(args, "SelfResource", false).(bool)
-	_SelfResourceField := utils.ParseArgs(args, "SelfResourceField", "user_id").(string)
-	_SelectFields := utils.ParseArgs(args, "SelectFields", []string{}).([]string)
-	_OmitFields := utils.ParseArgs(args, "OmitFields", []string{}).([]string)
-	_UpdatableFields := utils.ParseArgs(args, "UpdatableFields", []string{}).([]string)
+	defaultMessageValue := fmt.Sprintf("PUT %s", helpers.GetStructName(_DataEntity))
+	_Message := helpers.ParseArgs(args, "Message", defaultMessageValue).(string)
+	_SelfResource := helpers.ParseArgs(args, "SelfResource", false).(bool)
+	_SelfResourceField := helpers.ParseArgs(args, "SelfResourceField", "user_id").(string)
+	_SelectFields := helpers.ParseArgs(args, "SelectFields", []string{}).([]string)
+	_OmitFields := helpers.ParseArgs(args, "OmitFields", []string{}).([]string)
+	_UpdatableFields := helpers.ParseArgs(args, "UpdatableFields", []string{}).([]string)
 	return func(c *gin.Context) {
 		entityId := c.Param("id")
-		body := handlers.ParseBodyNonStrict(c, _UpdatableFields...)
+		body := helpers.ParseBodyNonStrict(c, _UpdatableFields...)
 		if body == nil {
 			return
 		}
@@ -36,10 +38,10 @@ func PutController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc
 		}
 
 		if res := querry.Updates(body); res.RowsAffected == 0 || res.Error != nil {
-			handlers.BadRequest(c, "Unable to Update")
+			helpers.BadRequest(c, "Unable to Update")
 			return
 		}
 
-		handlers.StatusOK(c, _DataEntity, _Message)
+		helpers.StatusOK(c, _DataEntity, _Message)
 	}
 }

@@ -22,7 +22,7 @@ type User struct {
 	Email    string         `gorm:"index:idx_email,unique"`
 	Roles    pq.StringArray `gorm:"type:text[]"`
 	Name     string
-	Verified bool // TODO Update code to check for verified users
+	Verified bool
 }
 
 type Passkey struct {
@@ -31,7 +31,7 @@ type Passkey struct {
 	UserID     uuid.UUID `gorm:"index"`
 	Desciption string
 	PublicKey  string `gorm:"index:idx_public,unique"`
-	Verified   bool   // TODO Update code to check for verified passkeys
+	Verified   bool
 }
 
 type Challenge struct {

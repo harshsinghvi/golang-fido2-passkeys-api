@@ -1,7 +1,7 @@
-package utils
+package helpers
 
 import (
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 	"time"
 )
 

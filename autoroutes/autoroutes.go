@@ -9,9 +9,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/controllers"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 )
 
 const (
@@ -72,9 +74,9 @@ func GenerateRoutes(router *gin.RouterGroup, routes []Route) {
 	var info = map[string]interface{}{}
 
 	for _, route := range routes {
-		dEName := utils.GetStructName(route.DataEntity)
-		endpointPath := fmt.Sprintf("/%s", utils.ToEndpointNameCase(dEName))
-		endpointPathWithId := fmt.Sprintf("/%s/:id", utils.ToEndpointNameCase(dEName))
+		dEName := helpers.GetStructName(route.DataEntity)
+		endpointPath := fmt.Sprintf("/%s", helpers.ToEndpointNameCase(dEName))
+		endpointPathWithId := fmt.Sprintf("/%s/:id", helpers.ToEndpointNameCase(dEName))
 
 		for _, method := range route.Methods {
 			if method == MethodGet {
@@ -103,7 +105,7 @@ func infoHandler(info map[string]interface{}) gin.HandlerFunc {
 		_info[key] = value
 	}
 	return func(c *gin.Context) {
-		handlers.StatusOK(c, _info, "Auto Generated Routes")
+		helpers.StatusOK(c, _info, "Auto Generated Routes")
 	}
 }
 

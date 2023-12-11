@@ -7,27 +7,29 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"github.com/iancoleman/strcase"
 	"github.com/jackc/pgerrcode"
+
+	// WIP: TO remove
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 )
 
 func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
-	defaultMessageValue := fmt.Sprintf("POST %s", utils.GetStructName(_DataEntity))
-	_Message := utils.ParseArgs(args, "Message", defaultMessageValue).(string)
-	_SelfResource := utils.ParseArgs(args, "SelfResource", false).(bool)
+	defaultMessageValue := fmt.Sprintf("POST %s", helpers.GetStructName(_DataEntity))
+	_Message := helpers.ParseArgs(args, "Message", defaultMessageValue).(string)
+	_SelfResource := helpers.ParseArgs(args, "SelfResource", false).(bool)
 	// TODO Use CamelCase here instead of user_id UserID
-	_SelfResourceField := utils.ParseArgs(args, "SelfResourceField", "user_id").(string)
-	_NewFields := utils.ParseArgs(args, "NewFields", []string{}).([]string)
-	_OverrideOmit := utils.ParseArgs(args, "OverrideOmit", false).(bool)
-	_SelectFields := utils.ParseArgs(args, "SelectFields", []string{}).([]string)
-	_GenFields := utils.ParseArgs(args, "GenFields", models.GenFields{}).(models.GenFields)
-	_DuplicateMessage := utils.ParseArgs(args, "DuplicateMessage", "Duplicate Fields.").(string)
-	_OmitFields := utils.ParseArgs(args, "OmitFields", []string{}).([]string)
+	_SelfResourceField := helpers.ParseArgs(args, "SelfResourceField", "user_id").(string)
+	_NewFields := helpers.ParseArgs(args, "NewFields", []string{}).([]string)
+	_OverrideOmit := helpers.ParseArgs(args, "OverrideOmit", false).(bool)
+	_SelectFields := helpers.ParseArgs(args, "SelectFields", []string{}).([]string)
+	_GenFields := helpers.ParseArgs(args, "GenFields", models.GenFields{}).(models.GenFields)
+	_DuplicateMessage := helpers.ParseArgs(args, "DuplicateMessage", "Duplicate Fields.").(string)
+	_OmitFields := helpers.ParseArgs(args, "OmitFields", []string{}).([]string)
 
 	return func(c *gin.Context) {
 		body := map[string]interface{}{}
@@ -38,7 +40,7 @@ func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFun
 		}
 
 		// Parse request body
-		reqBody := handlers.ParseBodyStrict(c, _NewFields...)
+		reqBody := helpers.ParseBodyStrict(c, _NewFields...)
 		if reqBody == nil {
 			return
 		}
@@ -55,16 +57,16 @@ func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFun
 
 		returningClause := helpers.ReturningColumnsCalculator(database.DB, _DataEntity, _SelectFields, _OmitFields, _OverrideOmit)
 
-		body["CreatedAt"] = utils.TimeNow()
-		body["UpdatedAt"] = utils.TimeNow()
+		body["CreatedAt"] = helpers.TimeNow()
+		body["UpdatedAt"] = helpers.TimeNow()
 
 		if res := database.DB.Model(_DataEntity).Clauses(returningClause).Create(body); res.RowsAffected == 0 || res.Error != nil {
-			switch code, _ := utils.PgErrorCodeAndMessage(res.Error); code {
+			switch code, _ := helpers.PgErrorCodeAndMessage(res.Error); code {
 			case pgerrcode.UniqueViolation:
-				handlers.BadRequest(c, _DuplicateMessage)
+				helpers.BadRequest(c, _DuplicateMessage)
 			default:
 				log.Printf("Error While Creating in database: %s", res.Error)
-				handlers.InternalServerError(c)
+				helpers.InternalServerError(c)
 			}
 			return
 		}
@@ -81,7 +83,7 @@ func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFun
 			if strings.Contains(key, "id") || strings.Contains(key, "ID") {
 				log.Println(key, "====>", value)
 				if value != nil {
-					body[key] = utils.StrToUUID(value.(string))
+					body[key] = helpers.StrToUUID(value.(string))
 				}
 			}
 			body[strcase.ToCamel(key)] = value
@@ -90,12 +92,12 @@ func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFun
 		x := []map[string]interface{}{body}
 		jsonData, err := json.Marshal(x)
 		if err != nil {
-			handlers.BadRequest(c, handlers.MessageBadRequest)
+			helpers.BadRequest(c, helpers.MessageBadRequest)
 			return
 		}
 		err = json.Unmarshal(jsonData, _DataEntity)
 		if err != nil {
-			handlers.BadRequest(c, handlers.MessageBadRequest)
+			helpers.BadRequest(c, helpers.MessageBadRequest)
 			return
 		}
 
@@ -104,6 +106,6 @@ func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFun
 		// https://pkg.go.dev/github.com/iancoleman/strcase#section-readme
 		// https://www.golinuxcloud.com/go-map-to-struct/
 		// Dynamically pass data type to to create single instance or array
-		handlers.StatusOK(c, _DataEntity, _Message)
+		helpers.StatusOK(c, _DataEntity, _Message)
 	}
 }
