@@ -1,20 +1,28 @@
 package models
 
 import (
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
-// TODO: indexex, unique keys https://stackoverflow.com/questions/63409314/how-do-i-create-unique-constraint-for-multiple-columns, defaults, enums
-// TODO: Email validation
-// Duplicate constraints, savepoints gorm
+const (
+	StatusFailed  = "FAILED"
+	StatusSuccess = "SUCCESS"
+	StatusPending = "PENDING"
+)
+
+var NilUUID = uuid.Nil
 
 type User struct {
 	gorm.Model
-	ID    uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
-	Name  string
-	Email string `gorm:"index:idx_email,unique"`
+	ID       uuid.UUID      `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	Email    string         `gorm:"index:idx_email,unique"`
+	Roles    pq.StringArray `gorm:"type:text[]"`
+	Name     string
+	Verified bool // TODO Update code to check for verified users
 }
 
 type Passkey struct {
@@ -23,14 +31,7 @@ type Passkey struct {
 	UserID     uuid.UUID `gorm:"index"`
 	Desciption string
 	PublicKey  string `gorm:"index:idx_public,unique"`
-}
-
-type PasskeyPrivateKey struct {
-	gorm.Model
-	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
-	UserID     uuid.UUID `gorm:"index"`
-	PasskeyID  uuid.UUID `gorm:"index"`
-	PrivateKey string
+	Verified   bool   // TODO Update code to check for verified passkeys
 }
 
 type Challenge struct {
@@ -40,8 +41,8 @@ type Challenge struct {
 	UserID    uuid.UUID `gorm:"index"`
 	Operand1  int
 	Operand2  int
-	Operator  string    // `gorm:"type:enum('+','*')"`
-	Status    string    // `gorm:"type:enum('FAILED','SUCCESS','PENDING')"`
+	Operator  string    // +/*
+	Status    string    // 'FAILED','SUCCESS','PENDING'
 	Expiry    time.Time `gorm:"index"`
 }
 
@@ -54,10 +55,45 @@ type AccessToken struct {
 	Token       string    `gorm:"index:idx_access_token"`
 	Disabled    bool      `gorm:"index:idx_access_token"`
 	Expiry      time.Time `gorm:"index:idx_access_token"`
+	Desciption  string
 }
 
-type Users []User
-type Passkeys []Passkey
-type PasskeyPrivateKeys []PasskeyPrivateKey
-type Challenges []Challenge
-type AccessTokens []AccessToken
+type AccessLog struct {
+	gorm.Model
+	ID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	UserID         uuid.UUID `gorm:"index:idx_access_logs"`
+	TokenID        uuid.UUID `gorm:"index:idx_access_logs"`
+	RequestID      uuid.UUID `gorm:"index:idx_access_logs"`
+	Path           string    `gorm:"index:idx_access_logs"`
+	ClientIP       string
+	Method         string    `gorm:"index:idx_access_logs"`
+	StatusCode     int       `gorm:"index:idx_access_logs"`
+	BillID         uuid.UUID `gorm:"index:idx_access_logs"`
+	Billed         bool
+	ResponseTime   int64
+	ResponseSize   int
+	ServerHostname string
+}
+
+type Verification struct {
+	gorm.Model
+	ID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	Email          string
+	UserID         uuid.UUID
+	PasskeyID      uuid.UUID
+	TokenID        uuid.UUID
+	ChallengeID    uuid.UUID
+	Expiry         time.Time
+	Status         string // 'FAILED','SUCCESS','PENDING'
+	Code           string
+	EmailMessageID string
+}
+
+// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
+// type PasskeyPrivateKey struct {
+// 	gorm.Model
+// 	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+// 	UserID     uuid.UUID `gorm:"index"`
+// 	PasskeyID  uuid.UUID `gorm:"index"`
+// 	PrivateKey string
+// }

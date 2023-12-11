@@ -1,90 +1,122 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/mitchellh/mapstructure"
-	"harshsinghvi/golang-fido2-passkeys-api/database"
-	"harshsinghvi/golang-fido2-passkeys-api/handlers"
-	"harshsinghvi/golang-fido2-passkeys-api/models"
-	"harshsinghvi/golang-fido2-passkeys-api/utils"
-	// "log"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"github.com/lib/pq"
+	"gorm.io/gorm"
 )
 
-// func GetControler(model interface{}) gin.HandlerFunc {
-// 	// entityName := reflect.TypeOf(&model{})
-// 	// search field =
-// 	log.Println()
-// 	return func(c *gin.Context) {
-// 		var users models.Users
-// 		database.DB.Find(&users)
-// 	}
-// }
-
 func NewUser(c *gin.Context) {
-	var user models.User
-	var passkey models.Passkey
-	// var passkeyPrivateKey models.PasskeyPrivateKey
-
 	data := map[string]interface{}{}
 
-	// body := handlers.ParseBody(c, []string{"Email", "Name", "PrivateKey", "PublicKey"})
-	body := handlers.ParseBody(c, []string{"Email", "Name", "PublicKey"})
+	body := handlers.ParseBodyStrict(c, "Email", "Name", "PublicKey") // "PrivateKey"
 	if body == nil {
-		handlers.InternalServerError(c)
 		return
 	}
 
-	if err := mapstructure.Decode(body, &user); err != nil {
-		handlers.InternalServerError(c)
+	user := models.User{
+		Name:     body["Name"].(string),
+		Email:    body["Email"].(string),
+		Verified: false,
+		Roles:    pq.StringArray{roles.User},
+	}
+
+	if ok := utils.IsEmailValid(user.Email); !ok {
+		handlers.BadRequest(c, handlers.MessageInvalidEmailAddress)
 		return
 	}
 
+	// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
 	// if ok := crypto.ValidatePublicAndPrivateKeys(body["PrivateKey"].(string), body["PublicKey"].(string)); !ok {
 	// 	handlers.BadRequest(c, "Invalid Public / Private Keys")
 	// 	return
 	// }
 
-	if ok := handlers.CreateInDatabase(c, &user); !ok {
+	tx := database.DB.Begin()
+
+	if ok := handlers.CreateInDatabase(c, tx, &user, models.Args{"DuplicateMessage": "Email address already in use, Please use different Email address"}); !ok {
+		tx.Rollback()
 		return
 	}
 
-	passkey.UserID = user.ID
-	passkey.Desciption = "Default Key"
-	passkey.PublicKey, _ = body["PublicKey"].(string)
+	passkey := models.Passkey{
+		UserID:     user.ID,
+		Desciption: "Default Key",
+		PublicKey:  body["PublicKey"].(string),
+		Verified:   false,
+	}
 
-	if ok := handlers.CreateInDatabase(c, &passkey); !ok {
+	if ok := handlers.CreateInDatabase(c, tx, &passkey, models.Args{"DuplicateMessage": "Public Key already in use, please Generate new keys."}); !ok {
+		tx.Rollback()
 		return
 	}
 
-	// passkeyPrivateKey.UserID = user.ID
-	// passkeyPrivateKey.PasskeyID = passkey.ID
-	// passkeyPrivateKey.PrivateKey, _ = body["PrivateKey"].(string)
+	ok, challenge := handlers.CreateChallenge(c, tx, data, passkey)
+	if !ok {
+		tx.Rollback()
+		return
+	}
 
-	// if ok := handlers.CreateInDatabase(c, &passkeyPrivateKey); !ok {
+	// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
+	// passkeyPrivateKey := models.PasskeyPrivateKey{
+	// 	UserID:     user.ID,
+	// 	PasskeyID:  passkey.ID,
+	// 	PrivateKey: body["PrivateKey"].(string),
+	// }
+	// if ok := handlers.CreateInDatabase(c, tx, &passkeyPrivateKey); !ok {
+	// 	tx.Rollback()
 	// 	return
 	// }
 
-	if ok := handlers.CreateChallenge(c, data, passkey); !ok {
-		handlers.InternalServerError(c)
+	verification := models.Verification{
+		UserID:      user.ID,
+		PasskeyID:   passkey.ID,
+		ChallengeID: challenge.ID,
+		Status:      models.StatusPending,
+		Expiry:      time.Now().AddDate(0, 0, 1),
+		Code:        utils.GenerateCode(),
+		Email:       user.Email,
+	}
+
+	if ok := handlers.CreateInDatabase(c, tx, &verification); !ok {
+		tx.Rollback()
 		return
 	}
 
-	data["PasskeyID"] = passkey.ID
-	data["User"] = user
-	handlers.StatusOK(c, data, "User Created, please complete Registration by completing challenge")
+	if ok := handlers.SendVerificationMail(tx, verification); !ok {
+		tx.Rollback()
+		handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
+		return
+	}
+
+	if ok := handlers.TxCommit(c, tx); !ok {
+		return
+	}
+
+	data["User"] = models.User{
+		Name:  user.Name,
+		Email: user.Email,
+	}
+
+	handlers.StatusOK(c, data, "User Created, please complete Registration by verifing Email, please check your inbox for verification instructions")
 }
 
 func VerifyChallenge(c *gin.Context) {
 	data := map[string]interface{}{}
+	var challenge models.Challenge
+	var passkey models.Passkey
 
-	body := handlers.ParseBody(c, []string{"ChallengeID", "ChallengeSignature"})
+	body := handlers.ParseBodyStrict(c, "ChallengeID", "ChallengeSignature")
 	if body == nil {
 		return
 	}
-
-	var challenge models.Challenge
-	var passkey models.Passkey
 
 	if res := database.DB.Where("id = ?  AND expiry > now()", body["ChallengeID"].(string)).Find(&challenge); res.RowsAffected == 0 {
 		handlers.BadRequest(c, "Invalid/Expired ChallengeID")
@@ -96,8 +128,8 @@ func VerifyChallenge(c *gin.Context) {
 		return
 	}
 
-	if time.Until(challenge.Expiry).Seconds() <= 0 || challenge.Status == "SUCCESS" {
-		handlers.BadRequest(c, "Challenge Verified Failed, Challenge Expired or Challenge already verified")
+	if time.Until(challenge.Expiry).Seconds() <= 0 || challenge.Status == models.StatusSuccess || challenge.Status == models.StatusFailed {
+		handlers.BadRequest(c, "Challenge Verified Failed, Challenge Expired or Challenge already Verified or Failed")
 		return
 	}
 
@@ -107,51 +139,71 @@ func VerifyChallenge(c *gin.Context) {
 		return
 	}
 
-	if ok := handlers.VerifySignature(passkey.PublicKey, body["ChallengeSignature"].(string), message); !ok {
+	if ok := utils.VerifySignature(passkey.PublicKey, body["ChallengeSignature"].(string), message); !ok {
 		// Update Database
-		challenge.Status = "FAILED"
+		challenge.Status = models.StatusFailed
 		database.DB.Save(&challenge)
 		handlers.BadRequest(c, "Challenge Verified Failed")
 		return
 	}
 
-	var accessToken models.AccessToken
-	accessToken.UserID = challenge.UserID
-	accessToken.PasskeyID = challenge.PasskeyID
-	accessToken.ChallengeID = challenge.ID
-	accessToken.Token = utils.GenerateToken(challenge.ID.String())
-	accessToken.Disabled = false
-	accessToken.Expiry = time.Now().AddDate(0, 0, 10)
+	accessToken := models.AccessToken{
+		UserID:      challenge.UserID,
+		PasskeyID:   challenge.PasskeyID,
+		ChallengeID: challenge.ID,
+		Token:       utils.GenerateToken(challenge.ID.String()),
+		Disabled:    !passkey.Verified, // passkey.Verified == false // Token must be disabled when the passkey is not verified
+		Expiry:      time.Now().AddDate(0, 0, 10),
+		Desciption:  "Generated from Passkey",
+	}
 
 	if accessToken.Token == "" {
 		handlers.InternalServerError(c)
 		return
 	}
 
-	if ok := handlers.CreateInDatabase(c, &accessToken); !ok {
+	if ok := handlers.CreateInDatabase(c, database.DB, &accessToken); !ok {
 		return
 	}
 
-	challenge.Status = "SUCCESS"
+	challenge.Status = models.StatusSuccess
 	database.DB.Save(&challenge)
 
 	data["TokenExpiry"] = accessToken.Expiry
 	data["Token"] = accessToken.Token
+
 	handlers.StatusOK(c, data, "Challenge Verification Successful")
 }
 
 func RequestChallenge(c *gin.Context) {
+	publicKeyStr := c.GetHeader("Public-Key")
 	passkeyId := c.Param("passkey")
 
-	data := map[string]interface{}{}
-	var passkey models.Passkey
+	var querry *gorm.DB
 
-	if res := database.DB.Where("id = ?", passkeyId).Find(&passkey); res.RowsAffected == 0 {
+	if publicKeyStr != "" {
+		querry = database.DB.Where("public_key = ?", publicKeyStr)
+	} else if passkeyId != "" {
+		querry = database.DB.Where("id = ?", passkeyId)
+	} else {
+		handlers.BadRequest(c, "Public-Key Header or /:passkey-id not found")
+		return
+	}
+
+	var passkey models.Passkey
+	data := map[string]interface{}{}
+
+	if res := querry.Find(&passkey); res.RowsAffected == 0 || res.Error != nil {
 		handlers.BadRequest(c, "Invalid passkey")
 		return
 	}
 
-	if ok := handlers.CreateChallenge(c, data, passkey); !ok {
+	if !passkey.Verified {
+		handlers.BadRequest(c, "Passkey Not Authorised, please authorise before using.")
+		return
+	}
+
+	if ok, _ := handlers.CreateChallenge(c, database.DB, data, passkey); !ok {
 		handlers.InternalServerError(c)
 		return
 	}
@@ -159,26 +211,65 @@ func RequestChallenge(c *gin.Context) {
 	handlers.StatusOK(c, data, "Challenge Created, Verify to login")
 }
 
-func RequestChallengeUsingPublicKey(c *gin.Context) {
-	publicKey := c.GetHeader("Public-Key")
-
-	if publicKey == "" {
-		handlers.BadRequest(c, "Public-Key Header not found")
+func RegistereNewPasskey(c *gin.Context) {
+	body := handlers.ParseBodyStrict(c, "Email", "PublicKey", "Desciption")
+	if body == nil {
 		return
 	}
 
-	data := map[string]interface{}{}
-	var passkey models.Passkey
+	tx := database.DB.Begin()
 
-	if res := database.DB.Where("public_key = ?", publicKey).Find(&passkey); res.RowsAffected == 0 {
-		handlers.BadRequest(c, "Invalid passkey")
+	var user models.User
+
+	if res := tx.Where("email = ?", body["Email"]).Find(&user); res.RowsAffected == 0 || res.Error != nil {
+		if !user.Verified {
+			handlers.BadRequest(c, "Email Not verified please verify")
+			return
+		}
+		handlers.BadRequest(c, "Email address not found. Please check Email address or register new user.")
 		return
 	}
 
-	if ok := handlers.CreateChallenge(c, data, passkey); !ok {
-		handlers.InternalServerError(c)
+	if !user.Verified {
+		handlers.BadRequest(c, "User not verified, please check your inbox for instructions")
 		return
 	}
 
-	handlers.StatusOK(c, data, "Challenge Created, Verify to login")
+	passkey := models.Passkey{
+		UserID:     user.ID,
+		PublicKey:  body["PublicKey"].(string),
+		Desciption: body["Desciption"].(string),
+		Verified:   false,
+	}
+
+	if ok := handlers.CreateInDatabase(c, tx, &passkey, models.Args{"DuplicateMessage": "Public Key already in use, please Generate new keys."}); !ok {
+		tx.Rollback()
+		return
+	}
+
+	verification := models.Verification{
+		// UserID:    user.ID, // not needed
+		PasskeyID: passkey.ID,
+		Status:    models.StatusPending,
+		Expiry:    time.Now().AddDate(0, 0, 1),
+		Code:      utils.GenerateCode(),
+		Email:     user.Email,
+	}
+
+	if ok := handlers.CreateInDatabase(c, tx, &verification); !ok {
+		tx.Rollback()
+		return
+	}
+
+	if ok := handlers.SendVerificationMail(tx, verification); !ok {
+		tx.Rollback()
+		handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
+		return
+	}
+
+	if ok := handlers.TxCommit(c, tx); !ok {
+		return
+	}
+
+	handlers.StatusOK(c, nil, "Passkey Added. Proceed to verification. check your email for verification code or verification link.")
 }

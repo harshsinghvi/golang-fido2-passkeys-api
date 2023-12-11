@@ -11,7 +11,7 @@ func init() {
 
 func main() {
 	var serverUrl string
-
+	var userEmail string
 	subDecrypt := flag.NewFlagSet("decrypt", flag.PanicOnError)
 	challenge := subDecrypt.String("c", "", "Challenge")
 
@@ -20,12 +20,16 @@ func main() {
 
 	subRegister := flag.NewFlagSet("register", flag.PanicOnError)
 	userName := subRegister.String("n", "", "User Full Name")
-	userEmail := subRegister.String("e", "", "User Email")
+	subRegister.StringVar(&userEmail, "e", "", "User Email")
 	subRegister.StringVar(&serverUrl, "server-url", "", "Server URL")
 
 	subLogin := flag.NewFlagSet("login", flag.PanicOnError)
-	passkeyId := subLogin.String("p", "", "Passkey ID")
 	subLogin.StringVar(&serverUrl, "server-url", "", "Server URL")
+
+	subAddKey := flag.NewFlagSet("add-key", flag.PanicOnError)
+	keyDescription := subAddKey.String("d", "Created From CLI", "Key Description")
+	subAddKey.StringVar(&userEmail, "e", "", "User Email")
+	subAddKey.StringVar(&serverUrl, "server-url", "", "Server URL")
 
 	if len(os.Args) < 2 {
 		printError()
@@ -35,6 +39,8 @@ func main() {
 	switch os.Args[1] {
 	case "gen":
 		gen()
+	case "get-me":
+		getMe()
 	case "decrypt":
 		subDecrypt.Parse(os.Args[2:])
 		cliDecrypt(*challenge)
@@ -43,10 +49,13 @@ func main() {
 		cliSign(*message)
 	case "login":
 		subLogin.Parse(os.Args[2:])
-		login(*passkeyId, serverUrl)
+		login(serverUrl)
 	case "register":
 		subRegister.Parse(os.Args[2:])
-		userReg(*userName, *userEmail, serverUrl)
+		userReg(*userName, userEmail, serverUrl)
+	case "add-key":
+		subAddKey.Parse(os.Args[2:])
+		addKey(userEmail, *keyDescription, serverUrl)
 	default:
 		printError()
 	}

@@ -2,10 +2,11 @@ package database
 
 import (
 	"fmt"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"harshsinghvi/golang-fido2-passkeys-api/models"
-	"harshsinghvi/golang-fido2-passkeys-api/utils"
+	"gorm.io/gorm/logger"
 	"log"
 )
 
@@ -21,7 +22,9 @@ func ConnectDb() {
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT)
 
-	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 
 	if err != nil {
 		log.Fatalln(err)
@@ -29,15 +32,17 @@ func ConnectDb() {
 
 	DB.AutoMigrate(&models.User{})
 	DB.AutoMigrate(&models.Passkey{})
-	DB.AutoMigrate(&models.PasskeyPrivateKey{})
 	DB.AutoMigrate(&models.Challenge{})
 	DB.AutoMigrate(&models.AccessToken{})
+	DB.AutoMigrate(&models.AccessLog{})
+	DB.AutoMigrate(&models.Verification{})
+
+	// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
+	// DB.AutoMigrate(&models.PasskeyPrivateKey{})
 
 	tx := DB.Exec("CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";")
 	if tx.Error != nil {
 		log.Printf("Error in installing PG Extension %s", tx.Error)
 	}
-
-	// DB.Create(&models.User{Name: "HS3", Email: "harsh@texam.io"})
-	// DB.Delete(&models.User{ID: utils.StrToUUID("7acbfc5f-f6aa-48b9-849c-4e3867c08f90")})
+	log.Printf("Databse connected and initialised")
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/base64"
-	"harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
 	"log"
 )
 
@@ -19,10 +19,11 @@ func gen() (string, string) {
 	e(err)
 
 	log.Println("Public Key String:", publicKeyStr)
-	log.Println("Private Key String:", privateKeyStr)
+	// log.Println("Private Key String:", privateKeyStr)
 	log.Println("Public key saved to", PUBLIC_KEY_PATH)
 	log.Println("Private key saved to", PRIVATE_KEY_PATH)
 
+	writeConfigToFile(Config{}, CONFIG_PATH)
 	return publicKeyStr, privateKeyStr
 }
 

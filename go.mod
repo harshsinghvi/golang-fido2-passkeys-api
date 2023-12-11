@@ -1,13 +1,15 @@
-module harshsinghvi/golang-fido2-passkeys-api
+module github.com/harshsinghvi/golang-fido2-passkeys-api
 
 go 1.21.1
 
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.4.0
+	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx/v5 v5.5.0
 	github.com/joho/godotenv v1.5.1
+	github.com/lib/pq v1.10.9
 	github.com/mitchellh/mapstructure v1.5.0
 	golang.org/x/crypto v0.16.0
 	gopkg.in/yaml.v2 v2.4.0
