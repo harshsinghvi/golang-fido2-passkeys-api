@@ -17,9 +17,7 @@ func PutController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc
 	_SelfResource := utils.ParseArgs(args, "SelfResource", false).(bool)
 	_SelfResourceField := utils.ParseArgs(args, "SelfResourceField", "user_id").(string)
 	_SelectFields := utils.ParseArgs(args, "SelectFields", []string{}).([]string)
-	// TODO: Bug can't omit
 	_OmitFields := utils.ParseArgs(args, "OmitFields", []string{}).([]string)
-
 	_UpdatableFields := utils.ParseArgs(args, "UpdatableFields", []string{}).([]string)
 	return func(c *gin.Context) {
 		entityId := c.Param("id")

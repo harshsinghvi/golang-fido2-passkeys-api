@@ -25,6 +25,7 @@ type Route struct {
 	Methods    []string
 	DataEntity interface{}
 	Args       models.Args
+	// config     Config
 }
 
 // https://pkg.go.dev/gopkg.in/mcuadros/go-defaults.v1#section-readme
@@ -38,21 +39,23 @@ type Config struct {
 	SelfResourceField string
 
 	// GET PUT POST
-	SelectFields []string
-	OmitFields   []string
+	SelectFields []string // snake_case
+	OmitFields   []string // snake_case
 
 	// GET
 	Limit        int
-	SearchFields []string
+	SearchFields []string // snake_case
 
 	// PUT
 	UpdatableFields []string // CamelCase
 
 	// POST
 	DuplicateMessage string
-	OverrideOmit     bool
-	NewFields        []string         // CamelCase
-	GenFields        models.GenFields // TODO: Isolate this too
+	// Rename omit in post
+	OverrideOmit bool
+	NewFields    []string // CamelCase
+	// Rename GenerateValues
+	GenFields models.GenFields // TODO: Isolate this too // CamelCase
 }
 
 type Routes []Route

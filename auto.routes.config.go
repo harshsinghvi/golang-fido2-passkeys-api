@@ -72,14 +72,14 @@ var protectedAutoRoutes = Routes{
 		"SelfResource":    true,
 		"SearchFields":    []string{"id", "user_id", "passkey_id", "desciption", "token"},
 		"SelectFields":    []string{"id", "passkey_id", "disabled", "expiry", "created_at", "updated_at", "desciption", "token"},
-		"OmitFields":      []string{"token", "id"},
+		"OmitFields":      []string{"token"},
+		"OverrideOmit":    true,
 		"UpdatableFields": []string{"Disabled", "Expiry"},
 		"NewFields":       []string{"Desciption", "Expiry"},
 		"GenFields": GenFields{
 			"Token":  utils.GenerateRandomToken,
 			"Expiry": utils.TimeNowAfterDays(10),
 		},
-		"OverrideOmit": true,
 	}, MethodGet, MethodPost, MethodDelete, MethodPut),
 
 	New(&[]AccessLog{}, Args{
