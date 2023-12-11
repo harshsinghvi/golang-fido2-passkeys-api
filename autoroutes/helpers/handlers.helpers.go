@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/pagination"
 	"net/http"
 )
 
@@ -38,7 +37,7 @@ func StatusOK(c *gin.Context, data interface{}, message string) {
 	c.Abort()
 }
 
-func StatusOKPag(c *gin.Context, data interface{}, pag pagination.Pagination, message string) {
+func StatusOKPag(c *gin.Context, data interface{}, pag Pagination, message string) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":     http.StatusOK,
 		"message":    message,

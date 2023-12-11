@@ -1,8 +1,9 @@
 package helpers
 
 import (
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 	"time"
+
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 )
 
 func TimeNow(args ...interface{}) interface{} {

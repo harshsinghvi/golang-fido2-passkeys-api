@@ -51,6 +51,9 @@ you can import or export keys in this folder
 
 - orgs
 
+- log req querry params
+- concurency
+
 - Workflow for releasing binaries
 - public key validation
 - token roles

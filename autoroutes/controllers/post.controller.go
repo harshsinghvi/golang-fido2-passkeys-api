@@ -7,18 +7,19 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
+	"gorm.io/gorm"
+
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 	"github.com/iancoleman/strcase"
 	"github.com/jackc/pgerrcode"
-
 	// WIP: TO remove
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	// "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 )
 
-func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
+func PostController(db *gorm.DB, _DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
 	defaultMessageValue := fmt.Sprintf("POST %s", helpers.GetStructName(_DataEntity))
 	_Message := helpers.ParseArgs(args, "Message", defaultMessageValue).(string)
 	_SelfResource := helpers.ParseArgs(args, "SelfResource", false).(bool)
@@ -55,12 +56,12 @@ func PostController(_DataEntity interface{}, args ...models.Args) gin.HandlerFun
 			body[_SelfResourceField] = userId
 		}
 
-		returningClause := helpers.ReturningColumnsCalculator(database.DB, _DataEntity, _SelectFields, _OmitFields, _OverrideOmit)
+		returningClause := helpers.ReturningColumnsCalculator(db, _DataEntity, _SelectFields, _OmitFields, _OverrideOmit)
 
 		body["CreatedAt"] = helpers.TimeNow()
 		body["UpdatedAt"] = helpers.TimeNow()
 
-		if res := database.DB.Model(_DataEntity).Clauses(returningClause).Create(body); res.RowsAffected == 0 || res.Error != nil {
+		if res := db.Model(_DataEntity).Clauses(returningClause).Create(body); res.RowsAffected == 0 || res.Error != nil {
 			switch code, _ := helpers.PgErrorCodeAndMessage(res.Error); code {
 			case pgerrcode.UniqueViolation:
 				helpers.BadRequest(c, _DuplicateMessage)

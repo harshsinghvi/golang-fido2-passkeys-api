@@ -55,14 +55,14 @@ func main() {
 
 			autoGenRouter := adminRouter.Group("/auto")
 			{
-				autoroutes.GenerateRoutes(autoGenRouter, adminAutoRoutes)
+				autoroutes.GenerateRoutes(database.DB, autoGenRouter, adminAutoRoutes)
 			}
 		}
 		protectedRouter := api.Group("/protected", controllers.AuthMW())
 		{
 			// INFO: USE OF ConfigMW(models.Args{"BillingDisable": false})
 			protectedRouter.GET("/get-me", controllers.GetMe)
-			autoroutes.GenerateRoutes(protectedRouter, protectedAutoRoutes)
+			autoroutes.GenerateRoutes(database.DB, protectedRouter, protectedAutoRoutes)
 		}
 	}
 

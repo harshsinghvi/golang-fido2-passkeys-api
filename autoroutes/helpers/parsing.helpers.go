@@ -2,10 +2,11 @@ package helpers
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 	"log"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 )
 
 func ParseBody(c *gin.Context, strict bool, keys []string) map[string]interface{} {

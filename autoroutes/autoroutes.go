@@ -8,9 +8,12 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/controllers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
+	// WIP: Remove latter
 	// "github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	// "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
@@ -70,7 +73,7 @@ func New(dataEntity interface{}, args models.Args, methods ...string) Route {
 	}
 }
 
-func GenerateRoutes(router *gin.RouterGroup, routes []Route) {
+func GenerateRoutes(db *gorm.DB, router *gin.RouterGroup, routes []Route) {
 	var info = map[string]interface{}{}
 
 	for _, route := range routes {
@@ -80,16 +83,16 @@ func GenerateRoutes(router *gin.RouterGroup, routes []Route) {
 
 		for _, method := range route.Methods {
 			if method == MethodGet {
-				router.GET(endpointPath, controllers.GetController(route.DataEntity, route.Args))
+				router.GET(endpointPath, controllers.GetController(db, route.DataEntity, route.Args))
 			}
 			if method == MethodPost {
-				router.POST(endpointPath, controllers.PostController(route.DataEntity, route.Args))
+				router.POST(endpointPath, controllers.PostController(db, route.DataEntity, route.Args))
 			}
 			if method == MethodPut {
-				router.PUT(endpointPathWithId, controllers.PutController(route.DataEntity, route.Args))
+				router.PUT(endpointPathWithId, controllers.PutController(db, route.DataEntity, route.Args))
 			}
 			if method == MethodDelete {
-				router.DELETE(endpointPathWithId, controllers.DeleteController(route.DataEntity, route.Args))
+				router.DELETE(endpointPathWithId, controllers.DeleteController(db, route.DataEntity, route.Args))
 			}
 		}
 

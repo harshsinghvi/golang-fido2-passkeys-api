@@ -5,18 +5,19 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
-
 	// WIP: TO remove
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	// "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/pagination"
+	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils/pagination"
 )
 
-func GetController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
-	_Limit := helpers.ParseArgs(args, "Limit", pagination.DEFAULT_LIMIT).(int)
+func GetController(db *gorm.DB, _DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
+	_Limit := helpers.ParseArgs(args, "Limit", helpers.DEFAULT_LIMIT).(int)
 	defaultMessageValue := fmt.Sprintf("GET %s", helpers.GetStructName(_DataEntity))
 	_Message := helpers.ParseArgs(args, "Message", defaultMessageValue).(string)
 	_OmitFields := helpers.ParseArgs(args, "OmitFields", []string{}).([]string)
@@ -24,18 +25,19 @@ func GetController(_DataEntity interface{}, args ...models.Args) gin.HandlerFunc
 	_SelfResource := helpers.ParseArgs(args, "SelfResource", false).(bool)
 	_SelfResourceField := helpers.ParseArgs(args, "SelfResourceField", "user_id").(string)
 	_SearchFields := helpers.ParseArgs(args, "SearchFields", []string{}).([]string)
+	
 	return func(c *gin.Context) {
 		var pageStr = c.Query("page")
 		var searchStr = c.Query("search")
 
-		pag := pagination.New(pageStr, _Limit)
+		pag := helpers.New(pageStr, _Limit)
 
 		if pag.CurrentPage == -1 {
 			helpers.BadRequest(c, "Invalid Page.")
 			return
 		}
 
-		querry := database.DB.Model(_DataEntity)
+		querry := db.Model(_DataEntity)
 
 		// if len(_SelectFields) != 0 {
 		// 	querry = querry.Select(_SelectFields)
