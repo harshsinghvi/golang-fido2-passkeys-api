@@ -4,15 +4,10 @@
 
 - <https://chat.openai.com/share/a5a947f0-9f3f-4045-aec8-967b8824c513> - ChatGPT Prompts
 - <https://documenter.getpostman.com/view/12907432/2s9YeHYpym> - Postman Collection
-- API
-- Client CLI
 
 ## Documentation to be updated soon
 
 - WIP: Documentation
-- WIP: Api more api endpints
-- WIP: Updated CLI
-- WPI: Business Logic for demonstration
 
 ## Usecases
 
@@ -57,6 +52,7 @@ you can import or export keys in this folder
 - Workflow for releasing binaries
 - public key validation
 - token roles
+- clean code in cli and crypto library
 - ~~nil check arrays in whole code~~
 - ~~send email~~
 - ~~delete or disabled endpoint~~
@@ -69,6 +65,9 @@ you can import or export keys in this folder
 - ~~email verification after user creation~~
 - ~~new passkey registration (followed by authorisation using email verification)~~
 - ~~audit logs~~
+
+- make new repos for cli and auto-gen routes
 UI
 - admin portal
 - org login
+- WIP: Documentation

@@ -4,14 +4,9 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
-	// WIP: TO remove
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/database"
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"gorm.io/gorm"
 )
 
 func PutController(db *gorm.DB, _DataEntity interface{}, args ...models.Args) gin.HandlerFunc {

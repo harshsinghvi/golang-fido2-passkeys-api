@@ -1,22 +1,12 @@
 package autoroutes
 
-// TODO Isolate all resources and modules
-// TODO get gorm db instance from config (pass db in GenerateRoutes -> each controllers)
-// Use arg config Struct to make config not
-
 import (
 	"fmt"
-
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/controllers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
-	// WIP: Remove latter
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"gorm.io/gorm"
 )
 
 const (
@@ -33,6 +23,10 @@ type Route struct {
 	// config     Config
 }
 
+// TODO: USE PascalCase to snake_case and vice versa functions
+// https://pkg.go.dev/github.com/iancoleman/strcase#section-readme
+
+// TODO: Use arg config Struct to make config not map for type safety and suggestions
 // https://pkg.go.dev/gopkg.in/mcuadros/go-defaults.v1#section-readme
 // https://github.com/mcuadros/go-defaults
 type Config struct {

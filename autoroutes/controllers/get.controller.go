@@ -5,15 +5,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
-	// WIP: TO remove
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/database"
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils/pagination"
+	"gorm.io/gorm"
 )
 
 func GetController(db *gorm.DB, _DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
@@ -25,7 +19,7 @@ func GetController(db *gorm.DB, _DataEntity interface{}, args ...models.Args) gi
 	_SelfResource := helpers.ParseArgs(args, "SelfResource", false).(bool)
 	_SelfResourceField := helpers.ParseArgs(args, "SelfResourceField", "user_id").(string)
 	_SearchFields := helpers.ParseArgs(args, "SearchFields", []string{}).([]string)
-	
+
 	return func(c *gin.Context) {
 		var pageStr = c.Query("page")
 		var searchStr = c.Query("search")

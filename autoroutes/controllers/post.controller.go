@@ -7,16 +7,11 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 	"github.com/iancoleman/strcase"
 	"github.com/jackc/pgerrcode"
-	// WIP: TO remove
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/database"
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
-	// "github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"gorm.io/gorm"
 )
 
 func PostController(db *gorm.DB, _DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
@@ -72,6 +67,8 @@ func PostController(db *gorm.DB, _DataEntity interface{}, args ...models.Args) g
 			return
 		}
 
+		// https://www.golinuxcloud.com/go-map-to-struct/
+
 		// Works Well Without this
 		// strcase.ConfigureAcronym("ID", "ID")
 		// strcase.ConfigureAcronym("UserID", "UserID")
@@ -102,11 +99,6 @@ func PostController(db *gorm.DB, _DataEntity interface{}, args ...models.Args) g
 			return
 		}
 
-		// TODO: Returning map[string]intereface{} instead of data entitie's model which is outputs fields in small case
-		// TODO: USE PascalCase to snake_case and vice versa functions
-		// https://pkg.go.dev/github.com/iancoleman/strcase#section-readme
-		// https://www.golinuxcloud.com/go-map-to-struct/
-		// Dynamically pass data type to to create single instance or array
 		helpers.StatusOK(c, _DataEntity, _Message)
 	}
 }
