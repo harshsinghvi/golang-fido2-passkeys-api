@@ -14,7 +14,7 @@ type Pagination struct {
 	Offset       int
 }
 
-const DEFAULT_LIMIT = 20
+const PAGINATION_DEFAULT_LIMIT = 20
 
 func (pag *Pagination) Validate() *Pagination {
 	pag.Set(pag.CurrentPage, pag.TotalRecords)
@@ -68,15 +68,14 @@ func (pag *Pagination) ParseString(pageString string) {
 	}
 }
 
-func New(pageString string, args ...int) Pagination {
+func NewPagination(pageString string, args ...int) Pagination {
 	var pag Pagination
-	pag.Limit = DEFAULT_LIMIT
+	pag.Limit = PAGINATION_DEFAULT_LIMIT
 
-	if args != nil {
+	if len(args) != 0 {
 		pag.Limit = args[0]
 	}
 
 	pag.ParseString(pageString)
-	// pag.Validate()
 	return pag
 }

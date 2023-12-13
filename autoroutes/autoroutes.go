@@ -9,84 +9,30 @@ import (
 	"gorm.io/gorm"
 )
 
-const (
-	MethodGet    = "GET"
-	MethodPost   = "POST"
-	MethodPut    = "PUT"
-	MethodDelete = "Delete"
-)
-
-type Route struct {
-	Methods    []string
-	DataEntity interface{}
-	Args       models.Args
-	// config     Config
-}
-
-// TODO: USE PascalCase to snake_case and vice versa functions
-// https://pkg.go.dev/github.com/iancoleman/strcase#section-readme
-
-// TODO: Use arg config Struct to make config not map for type safety and suggestions
-// https://pkg.go.dev/gopkg.in/mcuadros/go-defaults.v1#section-readme
-// https://github.com/mcuadros/go-defaults
-type Config struct {
-	// Args
-	// TODO: rename all arg keys with MethodName Prefix
-	// GET PUT POST DELETE
-	Message           string
-	SelfResource      bool
-	SelfResourceField string
-
-	// GET PUT POST
-	SelectFields []string // snake_case
-	OmitFields   []string // snake_case
-
-	// GET
-	Limit        int
-	SearchFields []string // snake_case
-
-	// PUT
-	UpdatableFields []string // CamelCase
-
-	// POST
-	DuplicateMessage string
-	// Rename omit in post
-	OverrideOmit bool
-	NewFields    []string // CamelCase
-	// Rename GenerateValues
-	GenFields models.GenFields // TODO: Isolate this too // CamelCase
-}
-
-type Routes []Route
-
-func New(dataEntity interface{}, args models.Args, methods ...string) Route {
-	return Route{
-		DataEntity: dataEntity,
-		Methods:    methods,
-		Args:       args,
-	}
-}
-
-func GenerateRoutes(db *gorm.DB, router *gin.RouterGroup, routes []Route) {
+func GenerateRoutes(db *gorm.DB, router *gin.RouterGroup, routes []models.Route) {
 	var info = map[string]interface{}{}
 
 	for _, route := range routes {
+
 		dEName := helpers.GetStructName(route.DataEntity)
 		endpointPath := fmt.Sprintf("/%s", helpers.ToEndpointNameCase(dEName))
 		endpointPathWithId := fmt.Sprintf("/%s/:id", helpers.ToEndpointNameCase(dEName))
 
+		helpers.SetDefaultConfig(dEName, &route.Config)
+
 		for _, method := range route.Methods {
-			if method == MethodGet {
-				router.GET(endpointPath, controllers.GetController(db, route.DataEntity, route.Args))
-			}
-			if method == MethodPost {
-				router.POST(endpointPath, controllers.PostController(db, route.DataEntity, route.Args))
-			}
-			if method == MethodPut {
-				router.PUT(endpointPathWithId, controllers.PutController(db, route.DataEntity, route.Args))
-			}
-			if method == MethodDelete {
-				router.DELETE(endpointPathWithId, controllers.DeleteController(db, route.DataEntity, route.Args))
+			switch method {
+			case models.MethodGet:
+				router.GET(endpointPath, controllers.GetController(db, route.DataEntity, route.Config))
+
+			case models.MethodPost:
+				router.POST(endpointPath, controllers.PostController(db, route.DataEntity, route.Config))
+
+			case models.MethodPut:
+				router.PUT(endpointPathWithId, controllers.PutController(db, route.DataEntity, route.Config))
+
+			case models.MethodDelete:
+				router.DELETE(endpointPathWithId, controllers.DeleteController(db, route.DataEntity, route.Config))
 			}
 		}
 
@@ -106,7 +52,7 @@ func infoHandler(info map[string]interface{}) gin.HandlerFunc {
 	}
 }
 
-func ValueWraperGenFunc(val interface{}) models.GenFunc {
+func GenerateConstantValue(val interface{}) models.GenFunc {
 	return func(args ...interface{}) interface{} {
 		return val
 	}

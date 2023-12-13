@@ -6,23 +6,24 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
+	"github.com/iancoleman/strcase"
 	"gorm.io/gorm"
 )
 
-func DeleteController(db *gorm.DB, _DataEntity interface{}, args ...models.Args) gin.HandlerFunc {
-	defaultMessageValue := fmt.Sprintf("DELETE %s", helpers.GetStructName(_DataEntity))
-	_Message := helpers.ParseArgs(args, "Message", defaultMessageValue).(string)
-	_SelfResource := helpers.ParseArgs(args, "SelfResource", false).(bool)
-	_SelfResourceField := helpers.ParseArgs(args, "SelfResourceField", "user_id").(string)
+func DeleteController(db *gorm.DB, _DataEntity interface{}, config models.Config) gin.HandlerFunc {
+	// defaultMessageValue := fmt.Sprintf("DELETE %s", helpers.GetStructName(_DataEntity))
+	// _Message := helpers.ParseArgs(args, "Message", defaultMessageValue).(string)
+	// _SelfResource := helpers.ParseArgs(args, "SelfResource", false).(bool)
+	// _SelfResourceField := helpers.ParseArgs(args, "SelfResourceField", "user_id").(string)
 
 	return func(c *gin.Context) {
 		entityId := c.Param("id")
 
 		querry := db.Where("id = ?", entityId)
 
-		if _SelfResource {
+		if config.SelfResource {
 			userId, _ := c.Get("user_id")
-			querry = querry.Where(fmt.Sprintf("%s = ?", _SelfResourceField), userId)
+			querry = querry.Where(fmt.Sprintf("%s = ?", strcase.ToSnake(config.SelfResourceField)), userId)
 		}
 
 		if res := querry.Delete(_DataEntity); res.RowsAffected == 0 || res.Error != nil {
@@ -30,6 +31,6 @@ func DeleteController(db *gorm.DB, _DataEntity interface{}, args ...models.Args)
 			return
 		}
 
-		helpers.StatusOK(c, nil, _Message)
+		helpers.StatusOK(c, nil, config.DeleteMessage)
 	}
 }

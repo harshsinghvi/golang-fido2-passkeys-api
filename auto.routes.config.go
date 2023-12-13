@@ -2,100 +2,133 @@ package main
 
 import (
 	"time"
-	
+
 	AppModels "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
+	. "github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes"
+	. "github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 )
 
 // TODO Check configs
-var adminAutoRoutes = autoroutes.Routes{
-	autoroutes.New(&[]AppModels.User{}, models.Args{
-		"SearchFields":     []string{"id", "email", "name"},
-		"UpdatableFields":  []string{"Name", "Roles", "Verified"},
-		"NewFields":        []string{"Name", "Email", "Verified"},
-		"DuplicateMessage": "Email already in use",
-	}, autoroutes.MethodGet, autoroutes.MethodPost, autoroutes.MethodDelete, autoroutes.MethodPut),
 
-	autoroutes.New(&[]AppModels.Passkey{}, models.Args{
-		"SearchFields":     []string{"id", "user_id", "desciption", "publicKey"},
-		"NewFields":        []string{"UserID", "Desciption", "PublicKey", "Verified"},
-		"UpdatableFields":  []string{"Desciption", "Verified"},
-		"DuplicateMessage": "Public Key already in use",
-	}, autoroutes.MethodGet, autoroutes.MethodPost, autoroutes.MethodDelete, autoroutes.MethodPut),
-
-	autoroutes.New(&[]AppModels.Challenge{}, models.Args{
-		"SearchFields": []string{"id", "user_id", "passkey_id", "status"},
-	}, autoroutes.MethodGet, autoroutes.MethodDelete),
-
-	autoroutes.New(&[]AppModels.AccessToken{}, models.Args{
-		"SearchFields":    []string{"id", "user_id", "passkey_id", "challenge_id", "desciption", "token"},
-		"NewFields":       []string{"UserID", "Desciption", "Expiry"},
-		"UpdatableFields": []string{"Disabled", "Expiry", "Desciption"},
-		"GenFields": models.GenFields{
-			"Token":  GenerateRandomToken,
-			"Expiry": TimeNowAfterDays(10),
+var protectedAutoRoutes = Routes{
+	Route{
+		DataEntity: &[]AppModels.User{},
+		Methods:    []string{MethodGet, MethodPut},
+		Config: Config{
+			SelfResource:       true,
+			SelfResourceField:  "ID",
+			PutUpdatableFields: []string{"Name"},
 		},
-	}, autoroutes.MethodGet, autoroutes.MethodPost, autoroutes.MethodDelete, autoroutes.MethodPut),
-
-	autoroutes.New(&[]AppModels.AccessLog{}, models.Args{
-		"SearchFields": []string{"id", "user_id", "passkey_id", "token_id", "bill_id", "method", "path", "status_code"},
-	}, autoroutes.MethodGet),
-
-	autoroutes.New(&[]AppModels.Verification{}, models.Args{
-		"SearchFields":    []string{"id", "user_id", "passkey_id", "challenge_id", "token_id", "code", "email", "status", "email_message_id"},
-		"UpdatableFields": []string{"Status", "Code", "Expiry"},
-		"NewFields":       []string{"UserID", "Expiry", "Email"},
-		"GenFields": models.GenFields{
-			"Code":   utils.GenFuncGenerateCode,
-			"Expiry": TimeNowAfterDays(10),
-			"Status": autoroutes.ValueWraperGenFunc(AppModels.StatusPending),
+	},
+	Route{
+		DataEntity: &[]AppModels.Passkey{},
+		Methods:    []string{MethodGet, MethodPost},
+		Config: Config{
+			SelfResource:         true,
+			OmitFields:           []string{"PublicKey"},
+			GetSearchFields:      []string{"ID", "UserID", "Desciption", "PublicKey"},
+			PostNewFields:        []string{"UserID", "Desciption", "PublicKey"},
+			PostDuplicateMessage: "Public Key already in use",
 		},
-	}, autoroutes.MethodGet, autoroutes.MethodPut, autoroutes.MethodPost),
+	},
+	Route{
+		DataEntity: &[]AppModels.AccessToken{},
+		Methods:    []string{MethodGet, MethodPost, MethodDelete, MethodPut},
+		Config: Config{
+			SelfResource:         true,
+			OmitFields:           []string{"Token"},
+			GetSearchFields:      []string{"ID", "UserID", "PasskeyID", "Desciption", "Token"},
+			PutUpdatableFields:   []string{"Disabled", "Expiry"},
+			PostNewFields:        []string{"Desciption", "Expiry"},
+			PostDuplicateMessage: "Public Key already in use",
+			PostGenerateValues: GenFields{
+				"Token":  GenerateRandomToken,
+				"Expiry": TimeNowAfterDays(10),
+			},
+		},
+	},
+	Route{
+		DataEntity: &[]AppModels.AccessLog{},
+		Methods:    []string{MethodGet},
+		Config: Config{
+			SelfResource:    true,
+			GetSearchFields: []string{"ID", "PasskeyID", "TokenID", "BillID", "Method", "Path", "StatusCode"},
+		},
+	},
 }
 
-var protectedAutoRoutes = autoroutes.Routes{
-	autoroutes.New(&[]AppModels.User{}, models.Args{
-		"SelfResource":      true,
-		"SelfResourceField": "id",
-		"UpdatableFields":   []string{"Name"},
-	}, autoroutes.MethodGet, autoroutes.MethodPut),
-
-	autoroutes.New(&[]AppModels.Passkey{}, models.Args{
-		"SelfResource":     true,
-		"OmitFields":       []string{"public_key"},
-		"SearchFields":     []string{"id", "user_id", "desciption", "publicKey"},
-		"NewFields":        []string{"UserID", "Desciption", "PublicKey"},
-		"DuplicateMessage": "Public Key already in use",
-	}, autoroutes.MethodGet, autoroutes.MethodPost),
-
-	autoroutes.New(&[]AppModels.AccessToken{}, models.Args{
-		"SelfResource": true,
-		"SearchFields": []string{"id", "user_id", "passkey_id", "desciption", "token"},
-		// "SelectFields":    []string{"id", "passkey_id", "user_id", "disabled", "expiry", "created_at", "updated_at", "desciption"},
-		"OmitFields":      []string{"token"},
-		"OverrideOmit":    true,
-		"UpdatableFields": []string{"Disabled", "Expiry"},
-		"NewFields":       []string{"Desciption", "Expiry"},
-		"GenFields": models.GenFields{
-			"Token":  GenerateRandomToken,
-			"Expiry": TimeNowAfterDays(10),
+var adminAutoRoutes = Routes{
+	Route{
+		DataEntity: &[]AppModels.User{},
+		Methods:    []string{MethodGet, MethodPost, MethodDelete, MethodPut},
+		Config: Config{
+			GetSearchFields:      []string{"ID", "Email", "name"},
+			PostNewFields:        []string{"Name", "Email", "Verified"},
+			PostDuplicateMessage: "Email already in use",
+			PutUpdatableFields:   []string{"Name", "Roles", "Verified"},
 		},
-	}, autoroutes.MethodGet, autoroutes.MethodPost, autoroutes.MethodDelete, autoroutes.MethodPut),
+	},
 
-	autoroutes.New(&[]AppModels.AccessLog{}, models.Args{
-		"SelfResource": true,
-		"SearchFields": []string{"id", "passkey_id", "token_id", "bill_id", "method", "path", "status_code"},
-	}, autoroutes.MethodGet),
+	Route{
+		DataEntity: &[]AppModels.Passkey{},
+		Methods:    []string{MethodGet, MethodPost, MethodDelete, MethodPut},
+		Config: Config{
+			GetSearchFields:      []string{"ID", "UserID", "Desciption", "PublicKey"},
+			PostNewFields:        []string{"UserID", "Desciption", "PublicKey", "Verified"},
+			PutUpdatableFields:   []string{"Desciption", "Verified"},
+			PostDuplicateMessage: "Public Key already in use",
+		},
+	},
+	Route{
+		DataEntity: &[]AppModels.Challenge{},
+		Methods:    []string{MethodGet, MethodDelete},
+		Config: Config{
+			GetSearchFields: []string{"ID", "UserID", "PasskeyID", "Status"},
+		},
+	},
+	Route{
+		DataEntity: &[]AppModels.AccessToken{},
+		Methods:    []string{MethodGet, MethodPost, MethodPut, MethodDelete},
+		Config: Config{
+			GetSearchFields:    []string{"ID", "UserID", "PasskeyID", "ChallengeID", "Desciption", "Token"},
+			PostNewFields:      []string{"UserID", "Desciption", "Expiry"},
+			PutUpdatableFields: []string{"Disabled", "Expiry", "Desciption"},
+			PostGenerateValues: GenFields{
+				"Token":  GenerateRandomToken,
+				"Expiry": TimeNowAfterDays(10),
+			},
+		},
+	},
+	Route{
+		DataEntity: &[]AppModels.AccessLog{},
+		Methods:    []string{MethodGet},
+		Config: Config{
+			GetSearchFields: []string{"ID", "UserID", "PasskeyID", "TokenID", "BillID", "Method", "Path", "StatusCode"},
+		},
+	},
+	Route{
+		DataEntity: &[]AppModels.Verification{},
+		Methods:    []string{MethodGet, MethodPost, MethodPut},
+		Config: Config{
+			GetSearchFields: []string{"ID", "UserID", "PasskeyID", "ChallengeID", "TokenID", "Code", "Email", "Status", "EmailMessageID"},
+			PostNewFields:   []string{"UserID", "Expiry", "Email"},
+			PostGenerateValues: GenFields{
+				"Code":   utils.GenFuncGenerateCode,
+				"Expiry": TimeNowAfterDays(10),
+				"Status": GenerateConstantValue(AppModels.StatusPending),
+			},
+			PutUpdatableFields: []string{"Status", "Code", "Expiry"},
+		},
+	},
 }
 
 func GenerateRandomToken(args ...interface{}) interface{} {
 	return utils.GenerateToken(utils.NewUUIDStr())
 }
 
-func TimeNowAfterDays(days int) models.GenFunc {
+func TimeNowAfterDays(days int) GenFunc {
 	return func(args ...interface{}) interface{} {
 		return time.Now().AddDate(0, 0, days)
 	}
