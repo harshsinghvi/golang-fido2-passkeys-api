@@ -9,6 +9,7 @@ const (
 	MessageBadRequest                 = "Bad Request"
 	MessageBadRequestInsufficientData = "Bad Request insufficient data"
 	MessageInvalidBody                = "Invalid Body"
+	MessageTemplateInvalidValue       = "Invalid %s, please check"
 	MessageError                      = "Message"
 )
 

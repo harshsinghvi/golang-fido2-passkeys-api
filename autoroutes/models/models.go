@@ -1,10 +1,12 @@
 package models
 
-type Args map[string]interface{}
+type GenerateFunction func(args ...interface{}) interface{}
 
-type GenFunc func(args ...interface{}) interface{}
+type GenerateFields map[string]GenerateFunction
 
-type GenFields map[string]GenFunc
+type ValidationFunction func(value interface{}) bool
+
+type ValidationFields map[string]ValidationFunction
 
 type Route struct {
 	Methods    []string
@@ -24,7 +26,8 @@ type Config struct {
 	PostDuplicateMessage string
 	PostSkipOmit         bool // genetated fields cannot be omitted
 	PostNewFields        []string
-	PostGenerateValues   GenFields
+	PostGenerateValues   GenerateFields
+	PostValidationFields ValidationFields
 	PutMessage           string
 	PutUpdatableFields   []string
 	DeleteMessage        string

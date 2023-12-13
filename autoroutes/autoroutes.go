@@ -52,7 +52,7 @@ func infoHandler(info map[string]interface{}) gin.HandlerFunc {
 	}
 }
 
-func GenerateConstantValue(val interface{}) models.GenFunc {
+func GenerateConstantValue(val interface{}) models.GenerateFunction {
 	return func(args ...interface{}) interface{} {
 		return val
 	}

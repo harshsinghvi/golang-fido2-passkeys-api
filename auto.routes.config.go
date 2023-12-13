@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/mail"
 	"time"
 
 	AppModels "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
@@ -43,7 +44,7 @@ var protectedAutoRoutes = Routes{
 			PutUpdatableFields:   []string{"Disabled", "Expiry"},
 			PostNewFields:        []string{"Desciption", "Expiry"},
 			PostDuplicateMessage: "Public Key already in use",
-			PostGenerateValues: GenFields{
+			PostGenerateValues: GenerateFields{
 				"Token":  GenerateRandomToken,
 				"Expiry": TimeNowAfterDays(10),
 			},
@@ -64,10 +65,16 @@ var adminAutoRoutes = Routes{
 		DataEntity: &[]AppModels.User{},
 		Methods:    []string{MethodGet, MethodPost, MethodDelete, MethodPut},
 		Config: Config{
-			GetSearchFields:      []string{"ID", "Email", "name"},
-			PostNewFields:        []string{"Name", "Email", "Verified"},
+			GetSearchFields:      []string{"ID", "Email", "Name"},
+			PostNewFields:        []string{"Name", "Email",},
 			PostDuplicateMessage: "Email already in use",
-			PutUpdatableFields:   []string{"Name", "Roles", "Verified"},
+			PostValidationFields: ValidationFields{
+				"Email": IsEmailValid,
+			},
+			PostGenerateValues: GenerateFields{
+				"Verified": GenerateConstantValue(false),
+			},
+			PutUpdatableFields: []string{"Name", "Roles", "Verified"},
 		},
 	},
 
@@ -95,7 +102,7 @@ var adminAutoRoutes = Routes{
 			GetSearchFields:    []string{"ID", "UserID", "PasskeyID", "ChallengeID", "Desciption", "Token"},
 			PostNewFields:      []string{"UserID", "Desciption", "Expiry"},
 			PutUpdatableFields: []string{"Disabled", "Expiry", "Desciption"},
-			PostGenerateValues: GenFields{
+			PostGenerateValues: GenerateFields{
 				"Token":  GenerateRandomToken,
 				"Expiry": TimeNowAfterDays(10),
 			},
@@ -114,7 +121,7 @@ var adminAutoRoutes = Routes{
 		Config: Config{
 			GetSearchFields: []string{"ID", "UserID", "PasskeyID", "ChallengeID", "TokenID", "Code", "Email", "Status", "EmailMessageID"},
 			PostNewFields:   []string{"UserID", "Expiry", "Email"},
-			PostGenerateValues: GenFields{
+			PostGenerateValues: GenerateFields{
 				"Code":   utils.GenFuncGenerateCode,
 				"Expiry": TimeNowAfterDays(10),
 				"Status": GenerateConstantValue(AppModels.StatusPending),
@@ -128,8 +135,17 @@ func GenerateRandomToken(args ...interface{}) interface{} {
 	return utils.GenerateToken(utils.NewUUIDStr())
 }
 
-func TimeNowAfterDays(days int) GenFunc {
+func TimeNowAfterDays(days int) GenerateFunction {
 	return func(args ...interface{}) interface{} {
 		return time.Now().AddDate(0, 0, days)
 	}
+}
+
+func TimeNow(args ...interface{}) interface{} {
+	return time.Now()
+}
+
+func IsEmailValid(email interface{}) bool {
+	_, err := mail.ParseAddress(email.(string))
+	return err == nil
 }

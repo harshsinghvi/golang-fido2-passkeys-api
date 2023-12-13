@@ -10,7 +10,7 @@ func TimeNow(args ...interface{}) interface{} {
 	return time.Now()
 }
 
-func TimeNowAfterDays(days int) models.GenFunc {
+func TimeNowAfterDays(days int) models.GenerateFunction {
 	return func(args ...interface{}) interface{} {
 		return time.Now().AddDate(0, 0, days)
 	}

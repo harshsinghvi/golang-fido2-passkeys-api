@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
@@ -21,7 +22,6 @@ import (
 // strcase.ConfigureAcronym("RequestID", "RequestID")
 // strcase.ConfigureAcronym("TokenID", "TokenID")
 
-// TODO add validation functionality
 func PostController(db *gorm.DB, _DataEntity interface{}, config models.Config) gin.HandlerFunc {
 	// defaultMessageValue := fmt.Sprintf("POST %s", helpers.GetStructName(_DataEntity))
 	// _Message := helpers.ParseArgs(args, "Message", defaultMessageValue).(string)
@@ -52,6 +52,14 @@ func PostController(db *gorm.DB, _DataEntity interface{}, config models.Config) 
 		// Combine genetated fields and request body
 		for key, value := range reqBody {
 			body[key] = value
+		}
+
+		// Validation
+		for key, validationFunction := range config.PostValidationFields {
+			if !validationFunction(body[key]) {
+				helpers.BadRequest(c, fmt.Sprintf(helpers.MessageTemplateInvalidValue, key))
+				return
+			}
 		}
 
 		if config.SelfResource {
