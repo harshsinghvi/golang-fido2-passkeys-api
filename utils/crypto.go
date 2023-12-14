@@ -26,3 +26,8 @@ func VerifySignature(publicKeyStr string, signatureStr string, message string) b
 
 	return true
 }
+
+func IsPublicKeyValid(publicKey string) bool {
+	_, err := crypto.ParsePublicKey(publicKey)
+	return err == nil
+}

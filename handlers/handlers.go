@@ -3,13 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/pagination"
-	"github.com/jackc/pgerrcode"
-	"gorm.io/gorm"
 	"io"
 	"log"
 	"net/http"
@@ -17,6 +10,14 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/pagination"
+	"github.com/jackc/pgerrcode"
+	"gorm.io/gorm"
 )
 
 func BadRequest(c *gin.Context, message string) {
@@ -204,13 +205,6 @@ func SendVerificationMail(db *gorm.DB, verification models.Verification) bool {
 	var FROM_NAME = utils.GetEnv("ELASTIC_FORM_NAME", "FIDO 2 Passkey de")
 	var BACKEND_URL = utils.GetEnv("BACKEND_URL", "https://passkey.harshsinghvi.com")
 
-	log.Println("API KEY =====> ", API_KEY)
-	log.Println("API KEY =====> ", BACKEND_URL)
-	log.Println("API KEY =====> ", FROM_NAME)
-	log.Println("API KEY =====> ", FROM_EMAIL)
-
-	log.Println(verification)
-
 	if API_KEY == "" {
 		log.Println("Elastic Email Api Key not found pelase check env")
 		return false
@@ -220,6 +214,7 @@ func SendVerificationMail(db *gorm.DB, verification models.Verification) bool {
 	if err != nil {
 		return false
 	}
+
 	verificationUrl.Path = fmt.Sprintf("/api/verify/%s", verification.ID)
 	verificationUrl.RawQuery = fmt.Sprintf("code=%s", verification.Code)
 
@@ -263,8 +258,6 @@ func SendVerificationMail(db *gorm.DB, verification models.Verification) bool {
 	if err != nil {
 		return false
 	}
-
-	log.Printf("resBody ===> %s", resBody)
 
 	err = json.Unmarshal(resBody, &data)
 

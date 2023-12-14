@@ -4,11 +4,11 @@ import (
 	"net/mail"
 	"time"
 
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/lib/crypto"
 	AppModels "github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 
 	. "github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes"
-	. "github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 )
 
 var protectedAutoRoutes = Routes{
@@ -19,17 +19,26 @@ var protectedAutoRoutes = Routes{
 			SelfResource:       true,
 			SelfResourceField:  "ID",
 			PutUpdatableFields: []string{"Name"},
+			PostValidationFields: ValidationFields{
+				"Email": isEmailValid,
+			},
 		},
 	},
 	Route{
 		DataEntity: &[]AppModels.Passkey{},
-		Methods:    []string{MethodGet, MethodPost},
+		Methods:    []string{MethodGet, MethodPost, MethodDelete},
 		Config: Config{
 			SelfResource:         true,
 			OmitFields:           []string{"PublicKey"},
 			GetSearchFields:      []string{"ID", "UserID", "Desciption", "PublicKey"},
-			PostNewFields:        []string{"UserID", "Desciption", "PublicKey"},
+			PostNewFields:        []string{"Desciption", "PublicKey"},
 			PostDuplicateMessage: "Public Key already in use",
+			PostValidationFields: ValidationFields{
+				"PublicKey": isPublicKeyValid,
+			},
+			PostGenerateValues: GenerateFields{
+				"Verified": GenerateConstantValue(false),
+			},
 		},
 	},
 	Route{
@@ -43,7 +52,7 @@ var protectedAutoRoutes = Routes{
 			PostNewFields:        []string{"Desciption", "Expiry"},
 			PostDuplicateMessage: "Public Key already in use",
 			PostGenerateValues: GenerateFields{
-				"Token":  GenerateRandomToken,
+				"Token":  GenFuncRandomToken,
 				"Expiry": TimeNowAfterDays(10),
 			},
 		},
@@ -67,7 +76,8 @@ var adminAutoRoutes = Routes{
 			PostNewFields:        []string{"Name", "Email"},
 			PostDuplicateMessage: "Email already in use",
 			PostValidationFields: ValidationFields{
-				"Email": IsEmailValid,
+				"Email":     isEmailValid,
+				"PublicKey": isPublicKeyValid,
 			},
 			PostGenerateValues: GenerateFields{
 				"Verified": GenerateConstantValue(false),
@@ -84,6 +94,9 @@ var adminAutoRoutes = Routes{
 			PostNewFields:        []string{"UserID", "Desciption", "PublicKey", "Verified"},
 			PutUpdatableFields:   []string{"Desciption", "Verified"},
 			PostDuplicateMessage: "Public Key already in use",
+			PostValidationFields: ValidationFields{
+				"PublicKey": isPublicKeyValid,
+			},
 		},
 	},
 	Route{
@@ -101,7 +114,7 @@ var adminAutoRoutes = Routes{
 			PostNewFields:      []string{"UserID", "Desciption", "Expiry"},
 			PutUpdatableFields: []string{"Disabled", "Expiry", "Desciption"},
 			PostGenerateValues: GenerateFields{
-				"Token":  GenerateRandomToken,
+				"Token":  GenFuncRandomToken,
 				"Expiry": TimeNowAfterDays(10),
 			},
 		},
@@ -133,7 +146,7 @@ func GenFuncGenerateCode(args ...interface{}) interface{} {
 	return utils.GenerateCode()
 }
 
-func GenerateRandomToken(args ...interface{}) interface{} {
+func GenFuncRandomToken(args ...interface{}) interface{} {
 	return utils.GenerateToken(utils.NewUUIDStr())
 }
 
@@ -147,7 +160,12 @@ func TimeNow(args ...interface{}) interface{} {
 	return time.Now()
 }
 
-func IsEmailValid(email interface{}) bool {
+func isEmailValid(email interface{}) bool {
 	_, err := mail.ParseAddress(email.(string))
+	return err == nil
+}
+
+func isPublicKeyValid(publicKey interface{}) bool {
+	_, err := crypto.ParsePublicKey(publicKey.(string))
 	return err == nil
 }

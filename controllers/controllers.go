@@ -4,13 +4,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
+	"gorm.io/gorm"
+
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
-	"github.com/lib/pq"
-	"gorm.io/gorm"
 )
 
 func NewUser(c *gin.Context) {
@@ -21,15 +22,13 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
-	user := models.User{
-		Name:     body["Name"].(string),
-		Email:    body["Email"].(string),
-		Verified: false,
-		Roles:    pq.StringArray{roles.User},
+	if ok := utils.IsEmailValid(body["Email"].(string)); !ok {
+		handlers.BadRequest(c, handlers.MessageInvalidEmailAddress)
+		return
 	}
 
-	if ok := utils.IsEmailValid(user.Email); !ok {
-		handlers.BadRequest(c, handlers.MessageInvalidEmailAddress)
+	if ok := utils.IsPublicKeyValid(body["PublicKey"].(string)); !ok {
+		handlers.BadRequest(c, handlers.MessageInvalidPublicKey)
 		return
 	}
 
@@ -40,6 +39,13 @@ func NewUser(c *gin.Context) {
 	// }
 
 	tx := database.DB.Begin()
+
+	user := models.User{
+		Name:     body["Name"].(string),
+		Email:    body["Email"].(string),
+		Verified: false,
+		Roles:    pq.StringArray{roles.User},
+	}
 
 	if ok := handlers.CreateInDatabase(c, tx, &user, models.Args{"DuplicateMessage": "Email address already in use, Please use different Email address"}); !ok {
 		tx.Rollback()
@@ -90,11 +96,14 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
-	if ok := handlers.SendVerificationMail(tx, verification); !ok {
-		tx.Rollback()
-		handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
-		return
-	}
+	handlers.SendVerificationMail(tx, verification)
+	// INFO: Not needed users can reverify
+	// if ok := handlers.SendVerificationMail(tx, verification); !ok {
+	// Not needed
+	// tx.Rollback()
+	// handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
+	// return
+	// }
 
 	if ok := handlers.TxCommit(c, tx); !ok {
 		return
@@ -261,11 +270,13 @@ func RegistereNewPasskey(c *gin.Context) {
 		return
 	}
 
-	if ok := handlers.SendVerificationMail(tx, verification); !ok {
-		tx.Rollback()
-		handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
-		return
-	}
+	handlers.SendVerificationMail(tx, verification)
+	// INFO: Not needed users can reverify
+	// if ok := handlers.SendVerificationMail(tx, verification); !ok {
+	// tx.Rollback()
+	// handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
+	// return
+	// }
 
 	if ok := handlers.TxCommit(c, tx); !ok {
 		return

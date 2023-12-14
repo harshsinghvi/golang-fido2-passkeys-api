@@ -13,5 +13,6 @@ const (
 	MessageErrorWhileSendingEmail     = "Error while sending Email. please register again."
 	MessageInvalidBody                = "Invalid Body"
 	MessageInvalidEmailAddress        = "Invalid Email Address Please use valid Email."
+	MessageInvalidPublicKey           = "Invalid PublicKey Please use valid PublicKey."
 	MessageError                      = "Message"
 )
