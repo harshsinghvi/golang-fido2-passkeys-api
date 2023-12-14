@@ -10,11 +10,6 @@ import (
 )
 
 func DeleteController(db *gorm.DB, _DataEntity interface{}, config models.Config) gin.HandlerFunc {
-	// defaultMessageValue := fmt.Sprintf("DELETE %s", helpers.GetStructName(_DataEntity))
-	// _Message := helpers.ParseArgs(args, "Message", defaultMessageValue).(string)
-	// _SelfResource := helpers.ParseArgs(args, "SelfResource", false).(bool)
-	// _SelfResourceField := helpers.ParseArgs(args, "SelfResourceField", "user_id").(string)
-
 	return func(c *gin.Context) {
 		entityId := c.Param("id")
 

@@ -47,26 +47,13 @@ you can import or export keys in this folder
 - orgs
 
 - log req querry params
-- concurency
 
 - Workflow for releasing binaries
 - public key validation
 - token roles
-- clean code in cli and crypto library
-- ~~nil check arrays in whole code~~
-- ~~send email~~
-- ~~delete or disabled endpoint~~
-- ~~verification expiry and updated verification process~~
-- ~~user roles~~
-- ~~user profile~~
-- ~~email validation~~
-- ~~demo business logic (todo app)~~
-- ~~demo business logic cli~~
-- ~~email verification after user creation~~
-- ~~new passkey registration (followed by authorisation using email verification)~~
-- ~~audit logs~~
+- clean code in `cli` and `crypto` library
 
-- make new repos for cli and auto-gen routes
+- make new repos for cli and `autoroutes` routes
 UI
 - admin portal
 - org login

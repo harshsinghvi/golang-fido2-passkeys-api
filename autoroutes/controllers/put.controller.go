@@ -10,14 +10,6 @@ import (
 )
 
 func PutController(db *gorm.DB, _DataEntity interface{}, config models.Config) gin.HandlerFunc {
-	// defaultMessageValue := fmt.Sprintf("PUT %s", helpers.GetStructName(_DataEntity))
-	// _Message := helpers.ParseArgs(args, "Message", defaultMessageValue).(string)
-	// _SelfResource := helpers.ParseArgs(args, "SelfResource", false).(bool)
-	// _SelfResourceField := helpers.ParseArgs(args, "SelfResourceField", "user_id").(string)
-	// _SelectFields := helpers.ParseArgs(args, "SelectFields", []string{}).([]string)
-	// _OmitFields := helpers.ParseArgs(args, "OmitFields", []string{}).([]string)
-	// _UpdatableFields := helpers.ParseArgs(args, "UpdatableFields", []string{}).([]string)
-
 	return func(c *gin.Context) {
 		entityId := c.Param("id")
 		body := helpers.ParseBodyNonStrict(c, config.PutUpdatableFields...)

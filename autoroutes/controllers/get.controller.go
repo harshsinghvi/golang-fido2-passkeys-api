@@ -11,15 +11,6 @@ import (
 )
 
 func GetController(db *gorm.DB, _DataEntity interface{}, config models.Config) gin.HandlerFunc {
-	// _Limit := helpers.ParseArgs(args, "Limit", helpers.DEFAULT_LIMIT).(int)
-	// defaultMessageValue := fmt.Sprintf("GET %s", helpers.GetStructName(_DataEntity))
-	// _Message := helpers.ParseArgs(args, "Message", defaultMessageValue).(string)
-	// _OmitFields := helpers.ParseArgs(args, "OmitFields", []string{}).([]string)
-	// _SelectFields := helpers.ParseArgs(args, "SelectFields", []string{}).([]string)
-	// _SelfResource := helpers.ParseArgs(args, "SelfResource", false).(bool)
-	// _SelfResourceField := helpers.ParseArgs(args, "SelfResourceField", "user_id").(string)
-	// _SearchFields := helpers.ParseArgs(args, "SearchFields", []string{}).([]string)
-
 	return func(c *gin.Context) {
 		var pageStr = c.Query("page")
 		var searchStr = c.Query("search")

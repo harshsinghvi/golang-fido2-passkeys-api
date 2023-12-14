@@ -47,3 +47,13 @@ func StatusOKPag(c *gin.Context, data interface{}, pag Pagination, message strin
 	})
 	c.Abort()
 }
+
+func InfoHandler(info map[string]interface{}) gin.HandlerFunc {
+	_info := map[string]interface{}{}
+	for key, value := range info {
+		_info[key] = value
+	}
+	return func(c *gin.Context) {
+		StatusOK(c, _info, "Auto Generated Routes")
+	}
+}

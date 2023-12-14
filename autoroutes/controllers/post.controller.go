@@ -14,18 +14,6 @@ import (
 )
 
 func PostController(db *gorm.DB, _DataEntity interface{}, config models.Config) gin.HandlerFunc {
-	// defaultMessageValue := fmt.Sprintf("POST %s", helpers.GetStructName(_DataEntity))
-	// _Message := helpers.ParseArgs(args, "Message", defaultMessageValue).(string)
-	// _SelfResource := helpers.ParseArgs(args, "SelfResource", false).(bool)
-	// // TODO Use CamelCase here instead of user_id UserID
-	// _SelfResourceField := helpers.ParseArgs(args, "SelfResourceField", "user_id").(string)
-	// _NewFields := helpers.ParseArgs(args, "NewFields", []string{}).([]string)
-	// _OverrideOmit := helpers.ParseArgs(args, "OverrideOmit", false).(bool)
-	// _SelectFields := helpers.ParseArgs(args, "SelectFields", []string{}).([]string)
-	// _GenFields := helpers.ParseArgs(args, "GenFields", models.GenFields{}).(models.GenFields)
-	// _DuplicateMessage := helpers.ParseArgs(args, "DuplicateMessage", "Duplicate Fields.").(string)
-	// _OmitFields := helpers.ParseArgs(args, "OmitFields", []string{}).([]string)
-
 	return func(c *gin.Context) {
 		body := map[string]interface{}{}
 
@@ -59,7 +47,6 @@ func PostController(db *gorm.DB, _DataEntity interface{}, config models.Config) 
 		}
 
 		returningClause := helpers.ReturningColumnsCalculator(db, _DataEntity, config)
-		log.Println("returningClause ======>", returningClause)
 
 		body["CreatedAt"] = helpers.TimeNow()
 		body["UpdatedAt"] = helpers.TimeNow()

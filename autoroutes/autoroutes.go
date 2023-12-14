@@ -1,59 +1,33 @@
 package autoroutes
 
 import (
-	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/controllers"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
-	"gorm.io/gorm"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/routes"
 )
 
-func GenerateRoutes(db *gorm.DB, router *gin.RouterGroup, routes []models.Route) {
-	var info = map[string]interface{}{}
+// Exports
 
-	for _, route := range routes {
+type Routes = models.Routes
+type Route = models.Route
+type Config = models.Config
+type GenerateFunction = models.GenerateFunction
+type GenerateFields = models.GenerateFields
+type ValidationFunction = models.ValidationFunction
+type ValidationFields = models.ValidationFields
 
-		dEName := helpers.GetStructName(route.DataEntity)
-		endpointPath := fmt.Sprintf("/%s", helpers.ToEndpointNameCase(dEName))
-		endpointPathWithId := fmt.Sprintf("/%s/:id", helpers.ToEndpointNameCase(dEName))
+const (
+	MethodGet    = models.MethodGet
+	MethodPost   = models.MethodPost
+	MethodPut    = models.MethodPut
+	MethodDelete = models.MethodDelete
+)
 
-		helpers.SetDefaultConfig(dEName, &route.Config)
+var (
+	GetController    = controllers.GetController
+	PostController   = controllers.PostController
+	DeleteController = controllers.DeleteController
+	PutController    = controllers.PutController
+)
 
-		for _, method := range route.Methods {
-			switch method {
-			case models.MethodGet:
-				router.GET(endpointPath, controllers.GetController(db, route.DataEntity, route.Config))
-
-			case models.MethodPost:
-				router.POST(endpointPath, controllers.PostController(db, route.DataEntity, route.Config))
-
-			case models.MethodPut:
-				router.PUT(endpointPathWithId, controllers.PutController(db, route.DataEntity, route.Config))
-
-			case models.MethodDelete:
-				router.DELETE(endpointPathWithId, controllers.DeleteController(db, route.DataEntity, route.Config))
-			}
-		}
-
-		info[dEName] = route.Methods
-	}
-
-	router.GET("/info", infoHandler(info))
-}
-
-func infoHandler(info map[string]interface{}) gin.HandlerFunc {
-	_info := map[string]interface{}{}
-	for key, value := range info {
-		_info[key] = value
-	}
-	return func(c *gin.Context) {
-		helpers.StatusOK(c, _info, "Auto Generated Routes")
-	}
-}
-
-func GenerateConstantValue(val interface{}) models.GenerateFunction {
-	return func(args ...interface{}) interface{} {
-		return val
-	}
-}
+var GenerateRoutes = routes.GenerateRoutes
