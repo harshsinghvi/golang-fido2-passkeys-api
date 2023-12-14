@@ -73,6 +73,7 @@ type AccessLog struct {
 	ResponseTime   int64
 	ResponseSize   int
 	ServerHostname string
+	RawQuery       string
 }
 
 type Verification struct {

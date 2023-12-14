@@ -24,7 +24,6 @@ func init() {
 }
 
 func main() {
-	// INFO: CONFIGS
 	REPO_URL := utils.GetEnv("REPO_URL", "https://github.com/harshsinghvi/golang-fido2-passkeys-api")
 	PORT := utils.GetEnv("PORT", "8080")
 
@@ -47,7 +46,6 @@ func main() {
 		api.GET("/re-verify/u/:email", controllers.ReVerifyUser)
 		api.GET("/re-verify/p", controllers.ReVerifyPasskey)
 
-		// INFO: Experimantal
 		adminRouter := api.Group("/admin", controllers.ConfigMW(models.Args{"BillingDisable": true}), controllers.AuthMW(roles.SuperAdmin))
 		{
 			adminRouter.GET("/verify/passkey/:id", controllers.VerifyPasskey)
@@ -60,8 +58,7 @@ func main() {
 		}
 		protectedRouter := api.Group("/protected", controllers.AuthMW())
 		{
-			// INFO: USE OF ConfigMW(models.Args{"BillingDisable": false})
-			protectedRouter.GET("/get-me", controllers.GetMe)
+			protectedRouter.GET("/get-me", controllers.ConfigMW(models.Args{"BillingDisable": false}), controllers.GetMe)
 			autoroutes.GenerateRoutes(database.DB, protectedRouter, protectedAutoRoutes)
 		}
 	}

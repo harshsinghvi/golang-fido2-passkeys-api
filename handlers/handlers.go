@@ -185,6 +185,7 @@ func LogReqToDb(c *gin.Context, db *gorm.DB, reqId uuid.UUID, reqStart time.Time
 		Method:         c.Request.Method,
 		ResponseTime:   time.Since(reqStart).Milliseconds(),
 		Billed:         !isAuthenticated || billingDisable,
+		RawQuery:       c.Request.URL.RawQuery,
 	}
 
 	if isAuthenticated {
