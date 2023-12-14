@@ -9,18 +9,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
-	"github.com/iancoleman/strcase"
 	"github.com/jackc/pgerrcode"
 	"gorm.io/gorm"
 )
-
-// Works Well Without this
-// strcase.ConfigureAcronym("ID", "ID")
-// strcase.ConfigureAcronym("UserID", "UserID")
-// strcase.ConfigureAcronym("PasskeyID", "PasskeyID")
-// strcase.ConfigureAcronym("ChallengeID", "ChallengeID")
-// strcase.ConfigureAcronym("RequestID", "RequestID")
-// strcase.ConfigureAcronym("TokenID", "TokenID")
 
 func PostController(db *gorm.DB, _DataEntity interface{}, config models.Config) gin.HandlerFunc {
 	// defaultMessageValue := fmt.Sprintf("POST %s", helpers.GetStructName(_DataEntity))
@@ -64,7 +55,7 @@ func PostController(db *gorm.DB, _DataEntity interface{}, config models.Config) 
 
 		if config.SelfResource {
 			userId, _ := c.Get("user_id")
-			body[strcase.ToSnake(config.SelfResourceField)] = userId
+			body[helpers.ToSnake(config.SelfResourceField)] = userId
 		}
 
 		returningClause := helpers.ReturningColumnsCalculator(db, _DataEntity, config)
@@ -90,7 +81,7 @@ func PostController(db *gorm.DB, _DataEntity interface{}, config models.Config) 
 					body[key] = helpers.StrToUUID(value.(string))
 				}
 			}
-			body[strcase.ToCamel(key)] = value
+			body[helpers.ToCamel(key)] = value
 		}
 
 		// https://www.golinuxcloud.com/go-map-to-struct/

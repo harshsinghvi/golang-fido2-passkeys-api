@@ -1,3 +1,12 @@
+package arcrived
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
+)
 
 func RequestChallengeByID(c *gin.Context) {
 	passkeyId := c.Param("passkey")
@@ -51,33 +60,32 @@ func RequestChallengeUsingPublicKey(c *gin.Context) {
 }
 
 // INFO Test and usage pending
-// import "github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
-// func CheckForSelfResource(c *gin.Context, value interface{}) bool {
-// 	userId, oKa := c.Get("user_id")
-// 	userRoles, oKb := c.Get("user_roles")
+func CheckForSelfResource(c *gin.Context, value interface{}) bool {
+	userId, oKa := c.Get("user_id")
+	userRoles, oKb := c.Get("user_roles")
 
-// 	if !oKa || !oKb {
-// 		UnauthorisedRequest(c)
-// 		return false
-// 	}
+	if !oKa || !oKb {
+		handlers.UnauthorisedRequest(c)
+		return false
+	}
 
-// 	if ok := roles.CheckRoles([]string{roles.Admin, roles.SuperAdmin}, userRoles.([]string)); ok {
-// 		return true
-// 	}
+	if ok := roles.CheckRoles([]string{roles.Admin, roles.SuperAdmin}, userRoles.([]string)); ok {
+		return true
+	}
 
-// 	switch entity := value.(type) {
-// 	case models.User:
-// 		return userId.(string) == entity.ID.String()
-// 	case models.Passkey:
-// 		return userId.(string) == entity.UserID.String()
-// 	case models.Challenge:
-// 		return userId.(string) == entity.UserID.String()
-// 	case models.AccessToken:
-// 		return userId.(string) == entity.UserID.String()
-// 	case models.Verification:
-// 		return userId.(string) == entity.UserID.String()
-// 	default:
-// 		UnauthorisedRequest(c)
-// 		return false
-// 	}
-// }
+	switch entity := value.(type) {
+	case models.User:
+		return userId.(string) == entity.ID.String()
+	case models.Passkey:
+		return userId.(string) == entity.UserID.String()
+	case models.Challenge:
+		return userId.(string) == entity.UserID.String()
+	case models.AccessToken:
+		return userId.(string) == entity.UserID.String()
+	case models.Verification:
+		return userId.(string) == entity.UserID.String()
+	default:
+		handlers.UnauthorisedRequest(c)
+		return false
+	}
+}

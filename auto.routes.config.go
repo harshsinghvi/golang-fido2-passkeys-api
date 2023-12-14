@@ -11,8 +11,6 @@ import (
 	. "github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 )
 
-// TODO Check configs
-
 var protectedAutoRoutes = Routes{
 	Route{
 		DataEntity: &[]AppModels.User{},
@@ -66,7 +64,7 @@ var adminAutoRoutes = Routes{
 		Methods:    []string{MethodGet, MethodPost, MethodDelete, MethodPut},
 		Config: Config{
 			GetSearchFields:      []string{"ID", "Email", "Name"},
-			PostNewFields:        []string{"Name", "Email",},
+			PostNewFields:        []string{"Name", "Email"},
 			PostDuplicateMessage: "Email already in use",
 			PostValidationFields: ValidationFields{
 				"Email": IsEmailValid,
@@ -122,13 +120,17 @@ var adminAutoRoutes = Routes{
 			GetSearchFields: []string{"ID", "UserID", "PasskeyID", "ChallengeID", "TokenID", "Code", "Email", "Status", "EmailMessageID"},
 			PostNewFields:   []string{"UserID", "Expiry", "Email"},
 			PostGenerateValues: GenerateFields{
-				"Code":   utils.GenFuncGenerateCode,
+				"Code":   GenFuncGenerateCode,
 				"Expiry": TimeNowAfterDays(10),
 				"Status": GenerateConstantValue(AppModels.StatusPending),
 			},
 			PutUpdatableFields: []string{"Status", "Code", "Expiry"},
 		},
 	},
+}
+
+func GenFuncGenerateCode(args ...interface{}) interface{} {
+	return utils.GenerateCode()
 }
 
 func GenerateRandomToken(args ...interface{}) interface{} {

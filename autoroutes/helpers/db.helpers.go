@@ -6,8 +6,6 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-
-	"github.com/iancoleman/strcase"
 )
 
 func ReturningColumnsCalculator(db *gorm.DB, _DataEntity interface{}, config models.Config) clause.Returning {
@@ -37,7 +35,7 @@ func GetReturningColumnNames(db *gorm.DB, _DataEntity interface{}, config models
 	}
 
 	for _, columnName := range config.SelectFields {
-		if !IfElementExists(config.OmitFields, strcase.ToSnake(columnName)) || config.PostSkipOmit {
+		if !IfElementExists(config.OmitFields, ToSnake(columnName)) || config.PostSkipOmit {
 			returningColumnNames = append(returningColumnNames, columnName)
 		}
 	}
@@ -50,7 +48,7 @@ func IfElementExists(arr []string, e string) bool {
 		return true
 	}
 	for _, v := range arr {
-		if strcase.ToSnake(v) == e {
+		if ToSnake(v) == e {
 			return true
 		}
 	}

@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
-	"github.com/iancoleman/strcase"
 	"gorm.io/gorm"
 )
 
@@ -32,7 +31,7 @@ func PutController(db *gorm.DB, _DataEntity interface{}, config models.Config) g
 
 		if config.SelfResource {
 			userId, _ := c.Get("user_id")
-			querry = querry.Where(fmt.Sprintf("%s = ?", strcase.ToSnake(config.SelfResourceField)), userId)
+			querry = querry.Where(fmt.Sprintf("%s = ?", helpers.ToSnake(config.SelfResourceField)), userId)
 		}
 
 		if res := querry.Updates(body); res.RowsAffected == 0 || res.Error != nil {

@@ -22,7 +22,3 @@ func EncodeToString(max int) string {
 func GenerateCode() string {
 	return EncodeToString(4)
 }
-
-func GenFuncGenerateCode(args ...interface{}) interface{} {
-	return GenerateCode()
-}

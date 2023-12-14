@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/helpers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes/models"
-	"github.com/iancoleman/strcase"
 	"gorm.io/gorm"
 )
 
@@ -37,7 +36,7 @@ func GetController(db *gorm.DB, _DataEntity interface{}, config models.Config) g
 		if len(config.SelectFields) != 0 {
 			fields := []string{}
 			for _, v := range config.SelectFields {
-				fields = append(fields, strcase.ToSnake(v))
+				fields = append(fields, helpers.ToSnake(v))
 			}
 			querry = querry.Select(fields)
 		}
@@ -45,7 +44,7 @@ func GetController(db *gorm.DB, _DataEntity interface{}, config models.Config) g
 		if len(config.OmitFields) != 0 {
 			fields := []string{}
 			for _, v := range config.OmitFields {
-				fields = append(fields, strcase.ToSnake(v))
+				fields = append(fields, helpers.ToSnake(v))
 			}
 			querry = querry.Omit(fields...)
 		}
@@ -53,7 +52,7 @@ func GetController(db *gorm.DB, _DataEntity interface{}, config models.Config) g
 		if searchStr != "" {
 			likeStr := fmt.Sprintf("%%%s%%", searchStr)
 			for _, columnCamelCase := range config.GetSearchFields {
-				column := strcase.ToSnake(columnCamelCase)
+				column := helpers.ToSnake(columnCamelCase)
 				if strings.Contains(column, "id") {
 					if helpers.IsUUIDValid(searchStr) {
 						querry = querry.Or(fmt.Sprintf("%s = ?", column), searchStr)
@@ -66,7 +65,7 @@ func GetController(db *gorm.DB, _DataEntity interface{}, config models.Config) g
 
 		if config.SelfResource {
 			userId, _ := c.Get("user_id")
-			querry = querry.Where(fmt.Sprintf("%s = ?", strcase.ToSnake(config.SelfResourceField)), userId)
+			querry = querry.Where(fmt.Sprintf("%s = ?", helpers.ToSnake(config.SelfResourceField)), userId)
 		}
 		res := querry.Count(&pag.TotalRecords)
 		if res.Error != nil {
