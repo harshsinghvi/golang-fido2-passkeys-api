@@ -53,7 +53,7 @@ func main() {
 	case "register":
 		subRegister.Parse(os.Args[2:])
 		userReg(*userName, userEmail, serverUrl)
-	case "add-key": // TODO: Rename to register-new-key
+	case "register-new-key":
 		subAddKey.Parse(os.Args[2:])
 		addKey(userEmail, *keyDescription, serverUrl)
 	default:

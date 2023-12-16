@@ -20,8 +20,15 @@ func e(err error, msg ...string) {
 }
 
 func printError() {
-	// TODO Update usage help
-	log.Fatalf("Invalid Usage check https://github.com/harshsinghvi/golang-fido2-passkeys-api for cli commands")
+	message := "Invalid Usage check https://github.com/harshsinghvi/golang-fido2-passkeys-api for cli commands \n"
+	message += "cli decrypt -c challenge-string \n"
+	message += "cli sign -m challenge-solution \n"
+	message += "cli gen \n"
+	message += "cli register -n <User Name> -e <User email> --server-url http://localhost:8080 \n"
+	message += "cli register-new-key -e <User email> -d <description> --server-url http://localhost:8080 \n"
+	message += "cli login --server-url http://localhost:8080 \n"
+	message += "cli get-me \n"
+	log.Fatalln(message)
 }
 
 func getPrivateKeyFromEnv() string {

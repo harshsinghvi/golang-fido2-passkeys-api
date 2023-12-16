@@ -20,13 +20,14 @@
 go install github.com/harshsinghvi/golang-fido2-passkeys-api/cli # install locally after cloning
 go install github.com/harshsinghvi/golang-fido2-passkeys-api/cli@latest # install directly
 
-cli gen # generate RSA keys
 cli decrypt -c challenge-string # manually decrypt challenge string and solve manually too
 cli sign -m challenge-solution # sign the challenge solution
+
+cli gen # generate RSA keys
 cli register -n "User fullname" -e "user email" --server-url http://localhost:8080 # register user with previously generated rsa keys and verify challenge
+cli register-new-key -e email -d description --server-url http://localhost:8080 # add key to user account
 cli login --server-url http://localhost:8080 # login user using stored keys
 cli get-me # Business logic
-cli add-key -e email -d description --server-url http://localhost:8080 # add key to user account
 ```
 
 this creates `$HOME/.FIDO2` Folder with rsa keys and config.yml file
@@ -46,10 +47,7 @@ you can import or export keys in this folder
 
 - orgs
 
-- log req querry params
-
 - Workflow for releasing binaries
-- public key validation
 - token roles
 - clean code in `cli` and `crypto` library
 
