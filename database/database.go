@@ -2,15 +2,17 @@ package database
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-	"log"
 )
 
 var DB *gorm.DB
+var IsDbReady = false
 
 func ConnectDb() {
 	var err error
@@ -27,7 +29,8 @@ func ConnectDb() {
 	})
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Println(err)
+		return
 	}
 
 	DB.AutoMigrate(&models.User{})
@@ -45,4 +48,25 @@ func ConnectDb() {
 		log.Printf("Error in installing PG Extension %s", tx.Error)
 	}
 	log.Printf("Databse connected and initialised")
+	IsDbReady = true
+}
+
+func Ping() bool {
+	db, dbErr := DB.DB()
+
+	if dbErr != nil {
+		log.Println(dbErr)
+		IsDbReady = false
+		return false
+	}
+
+	if pingErr := db.Ping(); pingErr != nil {
+		log.Println(pingErr)
+		IsDbReady = false
+		return false
+	}
+
+	IsDbReady = true
+
+	return IsDbReady
 }

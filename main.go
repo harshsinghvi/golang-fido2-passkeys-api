@@ -8,7 +8,6 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/autoroutes"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/controllers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/database"
-	"github.com/harshsinghvi/golang-fido2-passkeys-api/handlers"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
@@ -29,10 +28,9 @@ func main() {
 
 	router := gin.Default()
 
-	router.GET("/health", handlers.HealthHandler)
-	// TODO: Pending
-	// router.GET("/readiness", handlers.HealthHandler)
-	router.GET("/", handlers.ExternalRedirect(REPO_URL))
+	router.GET("/health", controllers.HealthHandler)
+	router.GET("/readiness", controllers.ReadinessHandler)
+	router.GET("/", controllers.ExternalRedirect(REPO_URL))
 
 	api := router.Group("/api", controllers.LoggerMW())
 	{

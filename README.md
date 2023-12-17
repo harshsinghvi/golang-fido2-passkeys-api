@@ -47,6 +47,8 @@ you can import or export keys in this folder
 
 - orgs
 
+- error handeling
+
 - Workflow for releasing binaries
 - token roles
 - clean code in `cli` and `crypto` library

@@ -133,16 +133,6 @@ func CreateChallenge(c *gin.Context, db *gorm.DB, data map[string]interface{}, p
 	return true, challenge
 }
 
-func HealthHandler(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, gin.H{"message": "OK"})
-}
-
-func ExternalRedirect(url string) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Redirect(http.StatusMovedPermanently, url)
-	}
-}
-
 func MarkVerified(c *gin.Context, db *gorm.DB, value interface{}, idField string, id string, updateField string, updateValue bool) bool {
 	if res := db.Model(value).Where(idField+" = ?", id).Update(updateField, updateValue); res.RowsAffected == 0 || res.Error != nil {
 		log.Println("Error While updating verified status Reason: ", res.Error)
