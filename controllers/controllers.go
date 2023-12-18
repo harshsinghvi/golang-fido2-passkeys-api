@@ -12,6 +12,7 @@ import (
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models/roles"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils"
+	"github.com/harshsinghvi/golang-fido2-passkeys-api/utils/event"
 )
 
 func NewUser(c *gin.Context) {
@@ -96,24 +97,23 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
-	handlers.SendVerificationMail(tx, verification)
-	// INFO: Not needed users can reverify
-	// if ok := handlers.SendVerificationMail(tx, verification); !ok {
-	// Not needed
-	// tx.Rollback()
-	// handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
-	// return
-	// }
+	emailOk := handlers.SendVerificationMail(tx, verification)
 
 	if ok := handlers.TxCommit(c, tx); !ok {
 		return
 	}
+
+	event.PostEvent(database.DB, event.NEW_USER, user.ID.String())
 
 	data["User"] = models.User{
 		Name:  user.Name,
 		Email: user.Email,
 	}
 
+	if !emailOk {
+		handlers.StatusOK(c, data, "User Created, Verification Mail not sent, please reverify")
+		return
+	}
 	handlers.StatusOK(c, data, "User Created, please complete Registration by verifing Email, please check your inbox for verification instructions")
 }
 
@@ -270,13 +270,11 @@ func RegistereNewPasskey(c *gin.Context) {
 		return
 	}
 
-	handlers.SendVerificationMail(tx, verification)
-	// INFO: Not needed users can reverify
-	// if ok := handlers.SendVerificationMail(tx, verification); !ok {
-	// tx.Rollback()
-	// handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
-	// return
-	// }
+	if ok := handlers.SendVerificationMail(tx, verification); !ok {
+		tx.Rollback()
+		handlers.BadRequest(c, handlers.MessageErrorWhileSendingEmail)
+		return
+	}
 
 	if ok := handlers.TxCommit(c, tx); !ok {
 		return

@@ -33,13 +33,6 @@ func ConnectDb() {
 		return
 	}
 
-	DB.AutoMigrate(&models.User{})
-	DB.AutoMigrate(&models.Passkey{})
-	DB.AutoMigrate(&models.Challenge{})
-	DB.AutoMigrate(&models.AccessToken{})
-	DB.AutoMigrate(&models.AccessLog{})
-	DB.AutoMigrate(&models.Verification{})
-
 	// INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
 	// DB.AutoMigrate(&models.PasskeyPrivateKey{})
 
@@ -47,6 +40,15 @@ func ConnectDb() {
 	if tx.Error != nil {
 		log.Printf("Error in installing PG Extension %s", tx.Error)
 	}
+
+	DB.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&models.Passkey{})
+	DB.AutoMigrate(&models.Challenge{})
+	DB.AutoMigrate(&models.AccessToken{})
+	DB.AutoMigrate(&models.AccessLog{})
+	DB.AutoMigrate(&models.Verification{})
+	DB.AutoMigrate(&models.Event{})
+
 	log.Printf("Databse connected and initialised")
 	IsDbReady = true
 }

@@ -90,6 +90,13 @@ type Verification struct {
 	EmailMessageID string
 }
 
+type Event struct {
+	gorm.Model
+	ID        uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
+	EventName string
+	Data      string
+}
+
 // INFO: PRIVATE KEY: Uncomment if we need to Store Private Keys
 // type PasskeyPrivateKey struct {
 // 	gorm.Model

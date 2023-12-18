@@ -104,7 +104,7 @@ func userReg(name string, email string, serverUrl string) {
 	challengeID, _ := data["data"].(map[string]interface{})["ChallengeID"].(string)
 	challengeStr, _ := data["data"].(map[string]interface{})["ChallengeString"].(string)
 	verifyChallenge(url, challengeID, challengeStr)
-	log.Println("INFO:  Please verify user check your inbox for instructions.")
+	log.Println("INFO: Please verify user check your inbox for instructions.")
 }
 
 func verifyChallenge(url string, challengeID string, challengeStr string) {

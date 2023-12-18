@@ -48,6 +48,10 @@ you can import or export keys in this folder
 - orgs
 
 - error handeling
+- rate limit
+- database events
+- user preferneces
+- check BillingDisable
 
 - Workflow for releasing binaries
 - token roles
