@@ -45,6 +45,10 @@ you can import or export keys in this folder
 
 ## TODO
 
+- verifivation types
+- update verification controller
+- update email handler
+
 - orgs
 
 - error handeling
@@ -62,3 +66,29 @@ UI
 - admin portal
 - org login
 - WIP: Documentation
+
+### TEST DB
+
+#### -- make changes in this
+
+```sql
+CREATE DATABASE test_db_savepoint; 
+```
+
+#### create test db from savepoint
+
+```sql
+SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity 
+WHERE pg_stat_activity.datname in ('test_db_savepoint' ,'test_db') AND pid <> pg_backend_pid();
+
+CREATE DATABASE test_db WITH TEMPLATE test_db_savepoint OWNER postgres;
+```
+
+#### reset to savepoint
+
+```sql
+SELECT pg_terminate_backend(pg_stat_activity.pid) FROM pg_stat_activity 
+WHERE pg_stat_activity.datname in ('test_db_savepoint' ,'test_db') AND pid <> pg_backend_pid();
+DROP DATABASE test_db;
+CREATE DATABASE test_db WITH TEMPLATE test_db_savepoint OWNER postgres;
+```
