@@ -76,6 +76,7 @@ func Verificaion(c *gin.Context) {
 		return
 	}
 
+	// TODO: Send Conformation Mail
 	handlers.StatusOK(c, nil, message)
 }
 
@@ -111,15 +112,11 @@ func ReVerifyUser(c *gin.Context) {
 		return
 	}
 
-	verification := models.Verification{
-		UserID:   user.ID,
-		EntityID: user.ID,
-		Status:   models.StatusPending,
-		Type:     models.VerificationTypeNewUser,
-		Expiry:   time.Now().AddDate(0, 0, 1),
-		Code:     utils.GenerateCode(),
-		Email:    user.Email,
-	}
+	// TODO: Test pending
+	// TODO: Use verification fn CreateVerification
+	verification := utils.CreateVerification(user.ID, models.VerificationTypeNewUser)
+	verification.UserID = user.ID
+	verification.Email = user.Email
 
 	tx := database.DB.Begin()
 
@@ -166,15 +163,11 @@ func ReVerifyPasskey(c *gin.Context) {
 		return
 	}
 
-	verification := models.Verification{
-		UserID:   user.ID,
-		EntityID: passkey.ID,
-		Type:     models.VerificationTypeNewPasskey,
-		Status:   models.StatusPending,
-		Expiry:   time.Now().AddDate(0, 0, 1),
-		Code:     utils.GenerateCode(),
-		Email:    user.Email,
-	}
+	// TODO: Test pending
+	// TODO: Use verification fn CreateVerification
+	verification := utils.CreateVerification(passkey.ID, models.VerificationTypeNewPasskey)
+	verification.UserID = user.ID
+	verification.Email = user.Email
 
 	tx := database.DB.Begin()
 

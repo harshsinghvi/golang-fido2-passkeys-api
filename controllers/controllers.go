@@ -86,13 +86,6 @@ func NewUser(c *gin.Context) {
 	verification.UserID = user.ID
 	verification.Email = user.Email
 
-	// verification := models.Verification{
-	// 	UserID:   user.ID,
-	// 	EntityID: user.ID,
-	// 	Type:     models.VerificationTypeNewUser,
-	// 	Email:    user.Email,
-	// }
-
 	if ok := handlers.CreateInDatabase(c, tx, &verification); !ok {
 		tx.Rollback()
 		return
