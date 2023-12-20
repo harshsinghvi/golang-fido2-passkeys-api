@@ -13,12 +13,13 @@ import (
 func Verificaion(c *gin.Context) {
 	id := c.Param("id")
 	code := c.Query("code")
-	var verification models.Verification
 
 	if id == "" || code == "" {
 		handlers.BadRequest(c, handlers.MessageBadRequestInsufficientData)
 		return
 	}
+
+	var verification models.Verification
 
 	if ok := handlers.GetById(database.DB, &verification, id); !ok {
 		handlers.BadRequest(c, handlers.MessageBadRequest)
@@ -31,7 +32,7 @@ func Verificaion(c *gin.Context) {
 		return
 	}
 
-	if verification.Status == models.StatusFailed {
+	if verification.Status == models.StatusFailed || verification.Status == "" || verification.Type == "" {
 		handlers.BadRequest(c, handlers.MessageVerificationAlreadyFailed)
 		return
 	}
@@ -46,59 +47,36 @@ func Verificaion(c *gin.Context) {
 		return
 	}
 
-	verification.Status = models.StatusSuccess
-
-	// INFO: Update Database
-	var user models.User
-	var passkey models.Passkey
-	var accessToken models.AccessToken
+	var ok bool = false
+	var message string = handlers.MessageBadRequest
 
 	tx := database.DB.Begin()
 
-	if verification.UserID != models.NilUUID {
-		if ok := handlers.MarkVerified(c, tx, &user, "id", verification.UserID.String(), "verified", true); !ok {
-			tx.Rollback()
-			return
-		}
+	switch verification.Type {
+	case models.VerificationTypeNewUser:
+		ok = handlers.VerifyNewUser(tx, verification)
+		ok, message = utils.CheckBoolAndReturnString(ok, "User Verified", "User Verification Failed or User already verified")
+	case models.VerificationTypeNewPasskey:
+		ok = handlers.VerifyNewPasskey(tx, verification)
+		ok, message = utils.CheckBoolAndReturnString(ok, "Passkey Authorised", "Passkey Authorisation Failed or already authorised")
+	case models.VerificationTypeDeleteUser:
+		ok = handlers.DeleteUser(tx, verification)
+		ok, message = utils.CheckBoolAndReturnString(ok, "User and data deleted", "User Deletion Failed or User already deleted")
 	}
 
-	if verification.PasskeyID != models.NilUUID {
-		if ok := handlers.MarkVerified(c, tx, &passkey, "id", verification.PasskeyID.String(), "verified", true); !ok {
-			tx.Rollback()
-			return
-		}
-	}
-
-	if verification.TokenID != models.NilUUID {
-		if ok := handlers.MarkVerified(c, tx, &accessToken, "id", verification.TokenID.String(), "disabled", false); !ok {
-			tx.Rollback()
-			return
-		}
-	}
-
-	if verification.ChallengeID != models.NilUUID {
-		if ok := handlers.MarkVerified(c, tx, &accessToken, "challenge_id", verification.ChallengeID.String(), "disabled", false); !ok {
-			tx.Rollback()
-			return
-		}
-	}
-
-	if res := tx.Save(&verification); res.RowsAffected == 0 || res.Error != nil {
+	if !ok {
 		tx.Rollback()
-		handlers.BadRequest(c, handlers.MessageBadRequest)
+		verification.Status = models.StatusFailed
+		database.DB.Save(&verification)
+		handlers.BadRequest(c, message)
 		return
 	}
 
-	if ok := handlers.TxCommit(c, tx); !ok {
+	if txOk := handlers.TxCommit(c, tx); !txOk {
 		return
 	}
 
-	if verification.UserID != models.NilUUID {
-		handlers.StatusOK(c, nil, handlers.MessageUserVerificationSuccess)
-		return
-	}
-
-	handlers.StatusOK(c, nil, handlers.MessagePasskeyVerificationSuccess)
+	handlers.StatusOK(c, nil, message)
 }
 
 func ReVerifyUser(c *gin.Context) {
@@ -134,13 +112,13 @@ func ReVerifyUser(c *gin.Context) {
 	}
 
 	verification := models.Verification{
-		UserID:      user.ID,
-		PasskeyID:   passkey.ID,
-		ChallengeID: challenge.ID,
-		Status:      models.StatusPending,
-		Expiry:      time.Now().AddDate(0, 0, 1),
-		Code:        utils.GenerateCode(),
-		Email:       user.Email,
+		UserID:   user.ID,
+		EntityID: user.ID,
+		Status:   models.StatusPending,
+		Type:     models.VerificationTypeNewUser,
+		Expiry:   time.Now().AddDate(0, 0, 1),
+		Code:     utils.GenerateCode(),
+		Email:    user.Email,
 	}
 
 	tx := database.DB.Begin()
@@ -189,11 +167,13 @@ func ReVerifyPasskey(c *gin.Context) {
 	}
 
 	verification := models.Verification{
-		PasskeyID: passkey.ID,
-		Status:    models.StatusPending,
-		Expiry:    time.Now().AddDate(0, 0, 1),
-		Code:      utils.GenerateCode(),
-		Email:     user.Email,
+		UserID:   user.ID,
+		EntityID: passkey.ID,
+		Type:     models.VerificationTypeNewPasskey,
+		Status:   models.StatusPending,
+		Expiry:   time.Now().AddDate(0, 0, 1),
+		Code:     utils.GenerateCode(),
+		Email:    user.Email,
 	}
 
 	tx := database.DB.Begin()

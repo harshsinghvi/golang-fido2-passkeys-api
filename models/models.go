@@ -12,6 +12,10 @@ const (
 	StatusFailed  = "FAILED"
 	StatusSuccess = "SUCCESS"
 	StatusPending = "PENDING"
+
+	VerificationTypeNewUser    = "NEW_USER"
+	VerificationTypeDeleteUser = "DELETE_USER"
+	VerificationTypeNewPasskey = "NEW_PASSKEY"
 )
 
 var NilUUID = uuid.Nil
@@ -80,10 +84,9 @@ type Verification struct {
 	gorm.Model
 	ID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primary_key"`
 	Email          string
+	EntityID       uuid.UUID
 	UserID         uuid.UUID
-	PasskeyID      uuid.UUID
-	TokenID        uuid.UUID
-	ChallengeID    uuid.UUID
+	Type           string // NEW_USER, DELETE_USER, NEW_PASSKEY
 	Expiry         time.Time
 	Status         string // 'FAILED','SUCCESS','PENDING'
 	Code           string

@@ -57,6 +57,7 @@ func main() {
 		protectedRouter := api.Group("/protected", controllers.AuthMW())
 		{
 			protectedRouter.GET("/get-me", controllers.ConfigMW(models.Args{"BillingDisable": false}), controllers.GetMe)
+			protectedRouter.DELETE("/delete-user", controllers.ConfigMW(models.Args{"BillingDisable": false}), controllers.DeleteUserAndData)
 			autoroutes.GenerateRoutes(database.DB, protectedRouter, protectedAutoRoutes)
 		}
 	}

@@ -65,7 +65,7 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
-	ok, challenge := handlers.CreateChallenge(c, tx, data, passkey)
+	ok, _ := handlers.CreateChallenge(c, tx, data, passkey)
 	if !ok {
 		tx.Rollback()
 		return
@@ -82,15 +82,16 @@ func NewUser(c *gin.Context) {
 	// 	return
 	// }
 
-	verification := models.Verification{
-		UserID:      user.ID,
-		PasskeyID:   passkey.ID,
-		ChallengeID: challenge.ID,
-		Status:      models.StatusPending,
-		Expiry:      time.Now().AddDate(0, 0, 1),
-		Code:        utils.GenerateCode(),
-		Email:       user.Email,
-	}
+	verification := utils.CreateVerification(user.ID, models.VerificationTypeNewUser)
+	verification.UserID = user.ID
+	verification.Email = user.Email
+
+	// verification := models.Verification{
+	// 	UserID:   user.ID,
+	// 	EntityID: user.ID,
+	// 	Type:     models.VerificationTypeNewUser,
+	// 	Email:    user.Email,
+	// }
 
 	if ok := handlers.CreateInDatabase(c, tx, &verification); !ok {
 		tx.Rollback()
@@ -103,7 +104,7 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
-	event.PostEvent(database.DB, event.NEW_USER, user.ID.String())
+	event.PostEvent(database.DB, event.NEW_USER, user.ID.String(), user.Email)
 
 	data["User"] = models.User{
 		Name:  user.Name,
@@ -256,14 +257,9 @@ func RegistereNewPasskey(c *gin.Context) {
 		return
 	}
 
-	verification := models.Verification{
-		// UserID:    user.ID, // not needed
-		PasskeyID: passkey.ID,
-		Status:    models.StatusPending,
-		Expiry:    time.Now().AddDate(0, 0, 1),
-		Code:      utils.GenerateCode(),
-		Email:     user.Email,
-	}
+	verification := utils.CreateVerification(passkey.ID, models.VerificationTypeNewPasskey)
+	verification.UserID = user.ID
+	verification.Email = user.Email
 
 	if ok := handlers.CreateInDatabase(c, tx, &verification); !ok {
 		tx.Rollback()

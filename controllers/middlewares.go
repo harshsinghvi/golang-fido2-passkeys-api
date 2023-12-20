@@ -47,8 +47,7 @@ func AuthMW(requiredRoles ...string) gin.HandlerFunc {
 		c.Set("token", accessToken.Token)
 		c.Set("token_id_uuid", accessToken.ID)
 		c.Set("user_id", user.ID.String())
-		c.Set("user_id_uuid", user.ID)
-		c.Set("user_roles", user.Roles)
+		c.Set("user", user)
 
 		c.Next()
 	}
