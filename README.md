@@ -92,3 +92,15 @@ WHERE pg_stat_activity.datname in ('test_db_savepoint' ,'test_db') AND pid <> pg
 DROP DATABASE test_db;
 CREATE DATABASE test_db WITH TEMPLATE test_db_savepoint OWNER postgres;
 ```
+
+#### hard delete
+
+```sql
+DELETE FROM access_logs WHERE deleted_at IS NOT NULL;
+DELETE FROM access_tokens WHERE deleted_at IS NOT NULL;
+DELETE FROM challenges WHERE deleted_at IS NOT NULL;
+DELETE FROM events WHERE deleted_at IS NOT NULL;
+DELETE FROM passkeys WHERE deleted_at IS NOT NULL;
+DELETE FROM users WHERE deleted_at IS NOT NULL;
+DELETE FROM verifications WHERE deleted_at IS NOT NULL;
+```
