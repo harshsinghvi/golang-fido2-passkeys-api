@@ -45,7 +45,6 @@ you can import or export keys in this folder
 
 ## TODO
 
-- test ReVerify user and passkey endpoint
 - check public key encoding
 
 - orgs

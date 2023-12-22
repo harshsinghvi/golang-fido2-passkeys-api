@@ -112,8 +112,6 @@ func ReVerifyUser(c *gin.Context) {
 		return
 	}
 
-	// TODO: Test pending
-	// TODO: Use verification fn CreateVerification
 	verification := utils.CreateVerification(user.ID, models.VerificationTypeNewUser)
 	verification.UserID = user.ID
 	verification.Email = user.Email
@@ -163,8 +161,6 @@ func ReVerifyPasskey(c *gin.Context) {
 		return
 	}
 
-	// TODO: Test pending
-	// TODO: Use verification fn CreateVerification
 	verification := utils.CreateVerification(passkey.ID, models.VerificationTypeNewPasskey)
 	verification.UserID = user.ID
 	verification.Email = user.Email
