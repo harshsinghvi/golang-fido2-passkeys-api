@@ -156,7 +156,7 @@ func VerifyChallenge(c *gin.Context) {
 		ChallengeID: challenge.ID,
 		Token:       utils.GenerateToken(challenge.ID.String()),
 		Disabled:    !passkey.Verified, // passkey.Verified == false // Token must be disabled when the passkey is not verified
-		Expiry:      time.Now().AddDate(0, 0, 10),
+		Expiry:      utils.GenerateTokenExpiryDate(),
 		Desciption:  "Generated from Passkey",
 	}
 

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
@@ -50,7 +49,7 @@ func CreateVerification(entityId uuid.UUID, args ...interface{}) models.Verifica
 		EntityID: entityId,
 		Status:   models.StatusPending,
 		// TODO: USE Expiry Config
-		Expiry: time.Now().AddDate(0, 0, 1),
+		Expiry: GenerateVerificationExpiryDate(),
 		Code:   GenerateCode(),
 	}
 

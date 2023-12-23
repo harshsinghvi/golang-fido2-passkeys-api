@@ -43,7 +43,7 @@ func CreateChallenge(c *gin.Context, db *gorm.DB, data map[string]interface{}, p
 	challenge.UserID = passkey.UserID
 	challenge.PasskeyID = passkey.ID
 	challenge.Status = models.StatusPending
-	challenge.Expiry = time.Now().AddDate(0, 0, 10)
+	challenge.Expiry = utils.GenerateChallengeExpiryDate()
 
 	if err != nil {
 		InternalServerError(c)
