@@ -48,7 +48,6 @@ func CreateVerification(entityId uuid.UUID, args ...interface{}) models.Verifica
 	verification := models.Verification{
 		EntityID: entityId,
 		Status:   models.StatusPending,
-		// TODO: USE Expiry Config
 		Expiry: GenerateVerificationExpiryDate(),
 		Code:   GenerateCode(),
 	}

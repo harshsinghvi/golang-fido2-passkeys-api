@@ -46,12 +46,11 @@ you can import or export keys in this folder
 ## TODO
 
 - check public key encoding
-
+- async logging
 - orgs
 
 - error handeling
 - rate limit
-- database events
 - user preferneces
 - check BillingDisable
 
