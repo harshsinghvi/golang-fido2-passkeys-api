@@ -5,6 +5,12 @@
 - <https://chat.openai.com/share/a5a947f0-9f3f-4045-aec8-967b8824c513> - ChatGPT Prompts
 - <https://documenter.getpostman.com/view/12907432/2s9YeHYpym> - Postman Collection
 
+## Deployment
+
+- elasticemail.com
+- render.com
+- supabase.com
+
 ## Documentation to be updated soon
 
 - WIP: Documentation
@@ -100,4 +106,16 @@ DELETE FROM events WHERE deleted_at IS NOT NULL;
 DELETE FROM passkeys WHERE deleted_at IS NOT NULL;
 DELETE FROM users WHERE deleted_at IS NOT NULL;
 DELETE FROM verifications WHERE deleted_at IS NOT NULL;
+```
+
+#### hard delete All
+
+```sql
+DELETE FROM access_logs;
+DELETE FROM access_tokens;
+DELETE FROM challenges;
+DELETE FROM events;
+DELETE FROM passkeys;
+DELETE FROM users;
+DELETE FROM verifications;
 ```

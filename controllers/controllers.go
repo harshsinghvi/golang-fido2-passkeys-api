@@ -97,7 +97,7 @@ func NewUser(c *gin.Context) {
 		return
 	}
 
-	event.PostEvent(database.DB, event.NEW_USER, user.ID.String(), user.Email)
+	event.PostEvent(c, database.DB, event.NEW_USER, user.ID.String(), user.Email)
 
 	data["User"] = models.User{
 		Name:  user.Name,
@@ -108,6 +108,7 @@ func NewUser(c *gin.Context) {
 		handlers.StatusOK(c, data, "User Created, Verification Mail not sent, please reverify")
 		return
 	}
+
 	handlers.StatusOK(c, data, "User Created, please complete Registration by verifing Email, please check your inbox for verification instructions")
 }
 

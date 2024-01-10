@@ -42,6 +42,6 @@ func DeleteUserAndData(c *gin.Context) {
 		return
 	}
 
-	event.PostEvent(database.DB, event.DELETE_USER, user.ID.String(), user.Email)
+	event.PostEvent(c, database.DB, event.DELETE_USER, user.ID.String(), user.Email)
 	handlers.StatusOK(c, nil, "User Deletion requested please check your email inbox.")
 }

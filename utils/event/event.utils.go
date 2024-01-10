@@ -4,6 +4,8 @@ import (
 	"log"
 	"strings"
 
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/harshsinghvi/golang-fido2-passkeys-api/models"
 	"gorm.io/gorm"
 )
@@ -15,10 +17,12 @@ const (
 	MISC_EVENT            = "MISC_EVENT"
 )
 
-func PostEvent(db *gorm.DB, eventName string, data ...string) {
+func PostEvent(c *gin.Context, db *gorm.DB, eventName string, data ...string) {
+	requestId, _ := c.Get("RequestID")
 	// TODO: INFO: Webhooks to post event to external service for altering.
 	event := models.Event{
 		EventName: eventName,
+		RequestID: requestId.(uuid.UUID),
 		Data:      strings.Join(data, ", "),
 	}
 

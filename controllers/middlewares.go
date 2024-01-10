@@ -57,7 +57,7 @@ func LoggerMW(args ...models.Args) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		reqId := uuid.New()
 		reqStart := time.Now()
-		c.Set("requestId", reqId)
+		c.Set("RequestID", reqId)
 		c.Writer.Header().Set("X-Request-Id", reqId.String())
 		c.Next()
 		handlers.LogReqToDb(c, database.DB, reqId, reqStart)
