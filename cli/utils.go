@@ -28,6 +28,7 @@ func printError() {
 	message += "cli register-new-key -e <User email> -d <description> --server-url http://localhost:8080 \n"
 	message += "cli login --server-url http://localhost:8080 \n"
 	message += "cli get-me \n"
+	message += "cli logout \n"
 	log.Fatalln(message)
 }
 

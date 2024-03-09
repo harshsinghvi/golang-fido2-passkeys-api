@@ -65,6 +65,35 @@ func login(serverUrl string) {
 	verifyChallenge(url, challengeID, challengeStr)
 }
 
+func logout() {
+	config := readConfigFromFile(CONFIG_PATH)
+	if config.AccessToken == "" {
+		log.Fatal("Please login / register to continue")
+	}
+	client := http.Client{}
+	req, err := http.NewRequest("GET", config.ServerUrl+"/api/logout", nil)
+	req.Header.Add("token", config.AccessToken)
+	e(err)
+	resp, err := client.Do(req)
+	e(err)
+
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		// if the status code is not 200, we should log the status code and the
+		// status string, then exit with a fatal error
+		if resp.StatusCode >= 400 && resp.StatusCode < 500 {
+			// print the response
+			data, err := io.ReadAll(resp.Body)
+			e(err)
+			log.Fatalf("BAD Request status code error: %d %s \n %s", resp.StatusCode, resp.Status, string(data))
+		}
+		log.Fatalf("status code error: %d %s", resp.StatusCode, resp.Status)
+	}
+
+	prettyPrintResp(resp)
+	writeConfigToFile(Config{}, CONFIG_PATH)
+}
+
 func userReg(name string, email string, serverUrl string) {
 	if email == "" {
 		log.Fatal("Specify email using -e")

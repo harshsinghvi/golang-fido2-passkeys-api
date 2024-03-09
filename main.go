@@ -44,6 +44,8 @@ func main() {
 		api.GET("/re-verify/u/:email", controllers.ReVerifyUser)
 		api.GET("/re-verify/p", controllers.ReVerifyPasskey)
 
+		api.GET("/logout", controllers.AuthMW(roles.User), controllers.Logout)
+
 		adminRouter := api.Group("/admin", controllers.ConfigMW(models.Args{"BillingDisable": true}), controllers.AuthMW(roles.SuperAdmin))
 		{
 			adminRouter.GET("/verify/passkey/:id", controllers.VerifyPasskey)
@@ -54,7 +56,8 @@ func main() {
 				autoroutes.GenerateRoutes(database.DB, autoGenRouter, adminAutoRoutes)
 			}
 		}
-		protectedRouter := api.Group("/protected", controllers.AuthMW())
+
+		protectedRouter := api.Group("/protected", controllers.AuthMW(roles.User))
 		{
 			protectedRouter.GET("/get-me", controllers.ConfigMW(models.Args{"BillingDisable": false}), controllers.GetMe)
 			protectedRouter.DELETE("/delete-user", controllers.ConfigMW(models.Args{"BillingDisable": false}), controllers.DeleteUserAndData)

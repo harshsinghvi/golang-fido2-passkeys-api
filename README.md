@@ -33,6 +33,7 @@ cli gen # generate RSA keys
 cli register -n "User fullname" -e "user email" --server-url http://localhost:8080 # register user with previously generated rsa keys and verify challenge
 cli register-new-key -e email -d description --server-url http://localhost:8080 # add key to user account
 cli login --server-url http://localhost:8080 # login user using stored keys
+cli logout # Business logic
 cli get-me # Business logic
 ```
 
@@ -51,6 +52,7 @@ you can import or export keys in this folder
 
 ## TODO
 
+- Add Event Status to all postEvent occurances, (failed / success)
 - check public key encoding
 - async logging
 - orgs
@@ -118,4 +120,16 @@ DELETE FROM events;
 DELETE FROM passkeys;
 DELETE FROM users;
 DELETE FROM verifications;
+```
+
+#### Drop All tables
+
+```sql
+DROP TABLE access_logs;
+DROP TABLE access_tokens;
+DROP TABLE challenges;
+DROP TABLE events;
+DROP TABLE passkeys;
+DROP TABLE users;
+DROP TABLE verifications;
 ```

@@ -10,7 +10,23 @@ import (
 )
 
 func SendVerificationMail(db *gorm.DB, verification models.Verification) bool {
+
+	var updateVerification = func() bool {
+		// TODO: check if wokring
+		if res := db.Save(verification); res.RowsAffected == 0 || res.Error != nil {
+			log.Println("Error Saving Emai lMessageID, Error, ", res.Error)
+			return false
+		}
+		return true
+	}
+
 	verificationUrl, _ := utils.GenerateVerificationUrl(verification.ID.String(), verification.Code)
+
+	if utils.IsEmailDomainTesting(verification.Email) {
+		verification.EmailMessageID = verificationUrl
+		return updateVerification()
+	}
+
 	var toEmail, emailSubject, bodyHtml, bodyHtmlTemplate string
 
 	// TODO USE CONFIG TO STORE HTML BODY TEMPLATE
@@ -42,10 +58,11 @@ func SendVerificationMail(db *gorm.DB, verification models.Verification) bool {
 
 	verification.EmailMessageID = messageId
 
+	// TODO: check if wokring
 	if res := db.Save(verification); res.RowsAffected == 0 || res.Error != nil {
 		log.Println("Error Saving EmailMessageID, Error, ", res.Error)
 		return false
 	}
 
-	return true
+	return updateVerification()
 }

@@ -50,6 +50,8 @@ func main() {
 	case "login":
 		subLogin.Parse(os.Args[2:])
 		login(serverUrl)
+	case "logout":
+		logout()
 	case "register":
 		subRegister.Parse(os.Args[2:])
 		userReg(*userName, userEmail, serverUrl)

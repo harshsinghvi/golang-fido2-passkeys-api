@@ -13,6 +13,7 @@ import (
 const (
 	NEW_USER              = "NEW_USER"
 	DELETE_USER           = "DELETE_USER"
+	LOGOUT                = "LOGOUT"
 	INTERNAL_SERVER_ERROR = "INTERNAL_SERVER_ERROR"
 	MISC_EVENT            = "MISC_EVENT"
 )

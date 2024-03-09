@@ -1,9 +1,12 @@
 package controllers
 
 import (
+	"fmt"
+	"log"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 
@@ -103,6 +106,8 @@ func NewUser(c *gin.Context) {
 		Name:  user.Name,
 		Email: user.Email,
 	}
+
+	data["PasskeyID"] = passkey.ID.String()
 
 	if !emailOk {
 		handlers.StatusOK(c, data, "User Created, Verification Mail not sent, please reverify")
@@ -270,5 +275,36 @@ func RegistereNewPasskey(c *gin.Context) {
 		return
 	}
 
-	handlers.StatusOK(c, nil, "Passkey Added. Proceed to verification. check your email for verification code or verification link.")
+	data := map[string]interface{}{
+		"PasskeyID": passkey.ID.String(),
+	}
+
+	handlers.StatusOK(c, data, "Passkey Added. Proceed to verification. check your email for verification code or verification link.")
+}
+
+func Logout(c *gin.Context) {
+	tokenIdInterface, _ := c.Get("token_id_uuid")
+	userInterface, _ := c.Get("user")
+
+	tokenId := tokenIdInterface.(uuid.UUID)
+	user := userInterface.(models.User)
+
+	fmt.Println(tokenId.String())
+
+	fmt.Println(user)
+
+	
+	res := database.DB.Delete(&models.AccessToken{
+		ID: tokenId,
+	})
+
+	if res.RowsAffected == 0 || res.Error != nil {
+		log.Println("Error deleting token , Error, ", res.Error)
+		handlers.BadRequest(c, "Logout failed, invalid token")
+		event.PostEvent(c, database.DB, event.LOGOUT, models.StatusFailed, user.ID.String(), user.Email)
+		return
+	}
+
+	event.PostEvent(c, database.DB, event.LOGOUT, models.StatusSuccess, user.ID.String(), user.Email)
+	handlers.StatusOK(c, nil, "Logout success")
 }

@@ -8,7 +8,14 @@ import (
 	"net/http"
 	"net/mail"
 	"net/url"
+	"strings"
 )
+
+func IsEmailDomainTesting(email string) bool {
+	emaiSplit := strings.Split(email, "@")
+	domain := emaiSplit[len(emaiSplit)-1]
+	return IsTestingDomain(domain)
+}
 
 func IsEmailValid(email string) bool {
 	_, err := mail.ParseAddress(email)
@@ -42,7 +49,7 @@ func SendMailByElasticMail(toEmail, emailSubject, bodyHtml string) (bool, string
 	querry.Set("senderName", FROM_EMAIL)
 	querry.Set("to", toEmail)
 	querry.Set("bodyHtml", bodyHtml)
-	// querry.Set("bodyText", "your verification code: 0000")
+	querry.Set("bodyText", "your verification code: 0000")
 	querry.Set("isTransactional", "true")
 	querry.Set("trackOpens", "true")
 	querry.Set("trackClicks", "true")
